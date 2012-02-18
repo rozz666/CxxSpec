@@ -31,12 +31,24 @@
 #define CXXSPEC_CAT2(a, b) a##b
 #define CXXSPEC_CAT(a, b) CXXSPEC_CAT2(a, b)
 #define SPECIFICATION(desc) \
-    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(); \
+    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor&); \
     static int CXXSPEC_CAT(CxxSpec__Specification_register_at_line_, __LINE__) \
         = (::CxxSpec::registerSpecification(desc, &CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)), 0); \
-    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)()
+    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& sv)
 
+#define SECTION(desc) if ((sv.beginSection(), sv.endSection(), true))
+    
 namespace CxxSpec {
+
+class ISpecificationVisitor
+{
+public:
+    virtual ~ISpecificationVisitor() { }
+    virtual void beginSection() = 0;
+    virtual void endSection() = 0;
+};
+    
+typedef void (*SpecFunction)(ISpecificationVisitor&);
 
 }
 

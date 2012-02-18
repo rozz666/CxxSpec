@@ -30,6 +30,8 @@
 #include <type_traits>
 #include <string>
 #include <map>
+#include <vector>
+
 
 
 
@@ -40,8 +42,6 @@ namespace CxxSpec
 {
 namespace
 {
-
-typedef void (*SpecFunction)();
 
 std::map<std::string, SpecFunction> registeredSpec;
 
@@ -75,7 +75,44 @@ void testRegisterSpecification()
     assert(CxxSpec::registeredSpec["another empty specification"] == &CxxSpec__Specification_at_line_68);
 }
 
+SPECIFICATION("one section")
+{
+    SECTION("one")
+    {
+    }
+}
+
+namespace
+{
+
+enum SpecOp
+{
+    BEGIN_SECTION,
+    END_SECTION
+};
+
+class SpecificationVisitor : public ::CxxSpec::ISpecificationVisitor
+{
+public:
+    std::vector<SpecOp> ops;
+
+    virtual void beginSection() { ops.push_back(BEGIN_SECTION); }
+    virtual void endSection() { ops.push_back(END_SECTION); }
+};
+
+}
+
+void testOneSection()
+{
+    SpecificationVisitor sv;
+    CxxSpec::registeredSpec["one section"](sv);
+    assert(sv.ops.size() == 2);
+    assert(sv.ops[0] == BEGIN_SECTION);
+    assert(sv.ops[1] == END_SECTION);
+}
+
 void testSpecification()
 {
     testRegisterSpecification();
+    testOneSection();
 }
