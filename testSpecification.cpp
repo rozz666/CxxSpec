@@ -29,13 +29,20 @@
 #include <CxxSpec/Specification.hpp>
 #include <type_traits>
 
-SPECIFICATION(An_empty_specification)
+static_assert(__LINE__ == 32, "must be line 32");
+SPECIFICATION(An_empty_specification) // line 33
+{
+}
+
+static_assert(__LINE__ == 37, "must be line 37");
+SPECIFICATION("another empty specification") // line 38
 {
 }
 
 void testEmptySpecification()
 {
-    assert(std::is_function<decltype(CxxSpec__Specification__An_empty_specification)>::value);
+    assert(std::is_function<decltype(CxxSpec__Specification_at_line_33)>::value);
+    assert(std::is_function<decltype(CxxSpec__Specification_at_line_38)>::value);
 }
 
 void testSpecification()
