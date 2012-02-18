@@ -143,9 +143,28 @@ void testNestedSections()
     assert(sv.ops[3] == END_SECTION);
 }
 
+SPECIFICATION("section sequence")
+{
+    SECTION("1") { }
+    SECTION("2") { }
+    SECTION("3") { }
+}
+
+void testSectionSequence()
+{
+    SpecificationVisitor sv;
+    CxxSpec::registeredSpec["section sequence"](sv);
+    assert(sv.ops.size() == 6);
+    assert(sv.ops[0] == BEGIN_SECTION);
+    assert(sv.ops[2] == BEGIN_SECTION);
+    assert(sv.ops[4] == BEGIN_SECTION);
+    assert(sv.ops[5] == END_SECTION);
+}
+
 void testSpecification()
 {
     testRegisterSpecification();
     testOneSection();
     testNestedSections();
+    testSectionSequence();
 }
