@@ -95,9 +95,18 @@ class SpecificationVisitor : public ::CxxSpec::ISpecificationVisitor
 {
 public:
     std::vector<SpecOp> ops;
+    std::vector<std::string> descs;
 
-    virtual void beginSection() { ops.push_back(BEGIN_SECTION); }
-    virtual void endSection() { ops.push_back(END_SECTION); }
+    virtual void beginSection(const std::string& desc)
+    {
+        ops.push_back(BEGIN_SECTION);
+        descs.push_back(desc);
+    }
+
+    virtual void endSection()
+    {
+        ops.push_back(END_SECTION);
+    }
 };
 
 }
@@ -127,7 +136,9 @@ void testNestedSections()
     CxxSpec::registeredSpec["nested sections"](sv);
     assert(sv.ops.size() == 4);
     assert(sv.ops[0] == BEGIN_SECTION);
+    assert(sv.descs[0] == "outer");
     assert(sv.ops[1] == BEGIN_SECTION);
+    assert(sv.descs[1] == "inner");
     assert(sv.ops[2] == END_SECTION);
     assert(sv.ops[3] == END_SECTION);
 }

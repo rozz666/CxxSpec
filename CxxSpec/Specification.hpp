@@ -27,6 +27,7 @@
 
 #ifndef CXXSPEC_SPECIFICATION_HPP
 #define CXXSPEC_SPECIFICATION_HPP
+#include <string>
 
 #define CXXSPEC_CAT2(a, b) a##b
 #define CXXSPEC_CAT(a, b) CXXSPEC_CAT2(a, b)
@@ -37,7 +38,7 @@
     void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor)
 
 #define SECTION(desc) \
-    if (const auto& CxxSpec_sectionGuard = ::CxxSpec::SectionGuard(CxxSpec_specificationVisitor))
+    if (const auto& CxxSpec_sectionGuard = ::CxxSpec::SectionGuard(CxxSpec_specificationVisitor, desc))
 
 namespace CxxSpec {
 
@@ -45,16 +46,17 @@ class ISpecificationVisitor
 {
 public:
     virtual ~ISpecificationVisitor() { }
-    virtual void beginSection() = 0;
+    virtual void beginSection(const std::string& desc) = 0;
     virtual void endSection() = 0;
 };
 
 class SectionGuard
 {
 public:
-    explicit SectionGuard(ISpecificationVisitor& sv) : sv(sv)
+    explicit SectionGuard(ISpecificationVisitor& sv, const std::string& desc)
+        : sv(sv)
     {
-        sv.beginSection();
+        sv.beginSection(desc);
     }
 
     ~SectionGuard()
