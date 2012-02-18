@@ -31,6 +31,9 @@
 #define CXXSPEC_CAT2(a, b) a##b
 #define CXXSPEC_CAT(a, b) CXXSPEC_CAT2(a, b)
 #define SPECIFICATION(desc) \
+    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(); \
+    static int CXXSPEC_CAT(CxxSpec__Specification_register_at_line_, __LINE__) \
+        = (::CxxSpec::registerSpecification(desc, &CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)), 0); \
     void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)()
 
 namespace CxxSpec {

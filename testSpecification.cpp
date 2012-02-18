@@ -28,24 +28,54 @@
 #include <cassert>
 #include <CxxSpec/Specification.hpp>
 #include <type_traits>
+#include <string>
+#include <map>
 
-static_assert(__LINE__ == 32, "must be line 32");
-SPECIFICATION(An_empty_specification) // line 33
+
+
+
+
+
+namespace CxxSpec
+{
+namespace
+{
+
+typedef void (*SpecFunction)();
+
+std::map<std::string, SpecFunction> registeredSpec;
+
+void registerSpecification(const std::string& desc, SpecFunction func)
+{
+    registeredSpec.insert(std::make_pair(desc, func));
+}
+
+}
+}
+
+
+
+
+
+
+
+static_assert(__LINE__ == 62, "must be line 62");
+SPECIFICATION("An empty specification") // line 63
 {
 }
 
-static_assert(__LINE__ == 37, "must be line 37");
-SPECIFICATION("another empty specification") // line 38
+static_assert(__LINE__ == 67, "must be line 67");
+SPECIFICATION("another empty specification") // line 68
 {
 }
 
-void testEmptySpecification()
+void testRegisterSpecification()
 {
-    assert(std::is_function<decltype(CxxSpec__Specification_at_line_33)>::value);
-    assert(std::is_function<decltype(CxxSpec__Specification_at_line_38)>::value);
+    assert(CxxSpec::registeredSpec["An empty specification"] == &CxxSpec__Specification_at_line_63);
+    assert(CxxSpec::registeredSpec["another empty specification"] == &CxxSpec__Specification_at_line_68);
 }
 
 void testSpecification()
 {
-    testEmptySpecification();
+    testRegisterSpecification();
 }
