@@ -161,10 +161,36 @@ void testSectionSequence()
     assert(sv.ops[5] == END_SECTION);
 }
 
+namespace
+{
+
+int checkExecuteParam;
+void checkExecute(int param)
+{
+    checkExecuteParam = param;
+}
+
+}
+
+SPECIFICATION("execution")
+{
+    auto x = 7;
+    checkExecute(x);
+}
+
+void testSpecificationExecution()
+{
+    SpecificationVisitor sv;
+    checkExecuteParam = 0;
+    CxxSpec::registeredSpec["execution"](sv);
+    assert(checkExecuteParam == 7);
+}
+
 void testSpecification()
 {
     testRegisterSpecification();
     testOneSection();
     testNestedSections();
     testSectionSequence();
+    testSpecificationExecution();
 }
