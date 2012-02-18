@@ -111,8 +111,30 @@ void testOneSection()
     assert(sv.ops[1] == END_SECTION);
 }
 
+SPECIFICATION("nested sections")
+{
+    SECTION("outer")
+    {
+        SECTION("inner")
+        {
+        }
+    }
+}
+
+void testNestedSections()
+{
+    SpecificationVisitor sv;
+    CxxSpec::registeredSpec["nested sections"](sv);
+    assert(sv.ops.size() == 4);
+    assert(sv.ops[0] == BEGIN_SECTION);
+    assert(sv.ops[1] == BEGIN_SECTION);
+    assert(sv.ops[2] == END_SECTION);
+    assert(sv.ops[3] == END_SECTION);
+}
+
 void testSpecification()
 {
     testRegisterSpecification();
     testOneSection();
+    testNestedSections();
 }

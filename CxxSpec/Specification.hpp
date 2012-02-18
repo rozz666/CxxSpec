@@ -34,10 +34,11 @@
     void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor&); \
     static int CXXSPEC_CAT(CxxSpec__Specification_register_at_line_, __LINE__) \
         = (::CxxSpec::registerSpecification(desc, &CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)), 0); \
-    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& sv)
+    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor)
 
-#define SECTION(desc) if ((sv.beginSection(), sv.endSection(), true))
-    
+#define SECTION(desc) \
+    if (const auto& CxxSpec_sectionGuard = ::CxxSpec::SectionGuard(CxxSpec_specificationVisitor))
+
 namespace CxxSpec {
 
 class ISpecificationVisitor
@@ -47,7 +48,26 @@ public:
     virtual void beginSection() = 0;
     virtual void endSection() = 0;
 };
-    
+
+class SectionGuard
+{
+public:
+    explicit SectionGuard(ISpecificationVisitor& sv) : sv(sv)
+    {
+        sv.beginSection();
+    }
+
+    ~SectionGuard()
+    {
+        sv.endSection();
+    }
+
+    operator bool() const { return true; }
+
+private:
+    ISpecificationVisitor& sv;
+};
+
 typedef void (*SpecFunction)(ISpecificationVisitor&);
 
 }
