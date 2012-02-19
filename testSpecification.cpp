@@ -87,6 +87,8 @@ namespace
 
 enum SpecOp
 {
+    BEGIN_SPECIFICATION,
+    END_SPECIFICATION,
     BEGIN_SECTION,
     END_SECTION
 };
@@ -96,6 +98,16 @@ class SpecificationVisitor : public ::CxxSpec::ISpecificationVisitor
 public:
     std::vector<SpecOp> ops;
     std::vector<std::string> descs;
+
+    virtual void beginSpecification()
+    {
+        ops.push_back(BEGIN_SPECIFICATION);
+    }
+
+    virtual void endSpecification()
+    {
+        ops.push_back(END_SPECIFICATION);
+    }
 
     virtual bool beginSection(const std::string& desc)
     {
@@ -116,9 +128,11 @@ void testOneSection()
 {
     SpecificationVisitor sv;
     CxxSpec::registeredSpec["one section"](sv);
-    assert(sv.ops.size() == 2);
-    assert(sv.ops[0] == BEGIN_SECTION);
-    assert(sv.ops[1] == END_SECTION);
+    assert(sv.ops.size() == 4);
+    assert(sv.ops[0] == BEGIN_SPECIFICATION);
+    assert(sv.ops[1] == BEGIN_SECTION);
+    assert(sv.ops[2] == END_SECTION);
+    assert(sv.ops[3] == END_SPECIFICATION);
 }
 
 SPECIFICATION("nested sections")
@@ -135,13 +149,15 @@ void testNestedSections()
 {
     SpecificationVisitor sv;
     CxxSpec::registeredSpec["nested sections"](sv);
-    assert(sv.ops.size() == 4);
-    assert(sv.ops[0] == BEGIN_SECTION);
-    assert(sv.descs[0] == "outer");
+    assert(sv.ops.size() == 6);
+    assert(sv.ops[0] == BEGIN_SPECIFICATION);
     assert(sv.ops[1] == BEGIN_SECTION);
+    assert(sv.descs[0] == "outer");
+    assert(sv.ops[2] == BEGIN_SECTION);
     assert(sv.descs[1] == "inner");
-    assert(sv.ops[2] == END_SECTION);
     assert(sv.ops[3] == END_SECTION);
+    assert(sv.ops[4] == END_SECTION);
+    assert(sv.ops[5] == END_SPECIFICATION);
 }
 
 SPECIFICATION("section sequence")
@@ -155,11 +171,11 @@ void testSectionSequence()
 {
     SpecificationVisitor sv;
     CxxSpec::registeredSpec["section sequence"](sv);
-    assert(sv.ops.size() == 6);
-    assert(sv.ops[0] == BEGIN_SECTION);
-    assert(sv.ops[2] == BEGIN_SECTION);
-    assert(sv.ops[4] == BEGIN_SECTION);
-    assert(sv.ops[5] == END_SECTION);
+    assert(sv.ops.size() == 8);
+    assert(sv.ops[1] == BEGIN_SECTION);
+    assert(sv.ops[3] == BEGIN_SECTION);
+    assert(sv.ops[5] == BEGIN_SECTION);
+    assert(sv.ops[6] == END_SECTION);
 }
 
 namespace
@@ -198,6 +214,9 @@ public:
 
     SelectionVisitor(const std::set<std::string>& selection)
         : selection(selection) { }
+
+    virtual void beginSpecification() { }
+    virtual void endSpecification() { }
 
     virtual bool beginSection(const std::string& desc)
     {

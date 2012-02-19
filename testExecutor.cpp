@@ -89,8 +89,48 @@ void testExecuteOneSection()
     assert(steps[1] == 2);
 }
 
+SPECIFICATION("parallel")
+{
+    step(1);
+    SECTION("")
+    {
+        step(11);
+    }
+    SECTION("")
+    {
+        step(12);
+    }
+    SECTION("")
+    {
+        step(13);
+    }
+    step(2);
+}
+
+void testParallel()
+{
+    CxxSpec::SpecificationExecutor exec;
+
+    steps.clear();
+    CxxSpec::registeredSpec["parallel"](exec);
+    assert(!exec.done());
+    assert(steps.size() == 3);
+    assert(steps[0] == 1);
+    assert(steps[1] == 11);
+    assert(steps[2] == 2);
+
+//     steps.clear();
+//     CxxSpec::registeredSpec["parallel"](exec);
+//     assert(!exec.done());
+//     assert(steps.size() == 3);
+//     assert(steps[0] == 1);
+//     assert(steps[1] == 12);
+//     assert(steps[2] == 2);
+}
+
 void testExecutor()
 {
     testExecuteNoSections();
     testExecuteOneSection();
+    testParallel();
 }

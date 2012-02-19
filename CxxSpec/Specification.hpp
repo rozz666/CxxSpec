@@ -32,10 +32,15 @@
 #define CXXSPEC_CAT2(a, b) a##b
 #define CXXSPEC_CAT(a, b) CXXSPEC_CAT2(a, b)
 #define SPECIFICATION(desc) \
-    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor&); \
+    void CXXSPEC_CAT(CxxSpec__Specification_impl_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor); \
+    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor) \
+    { \
+        ::CxxSpec::SpecificationGuard CxxSpec_specificationGuard(CxxSpec_specificationVisitor);\
+        CXXSPEC_CAT(CxxSpec__Specification_impl_at_line_, __LINE__)(CxxSpec_specificationVisitor);\
+    } \
     static int CXXSPEC_CAT(CxxSpec__Specification_register_at_line_, __LINE__) \
         = (::CxxSpec::registerSpecification(desc, &CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)), 0); \
-    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor)
+    void CXXSPEC_CAT(CxxSpec__Specification_impl_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor)
 
 #define SECTION(desc) \
     if (const auto& CxxSpec_sectionGuard = ::CxxSpec::SectionGuard(CxxSpec_specificationVisitor, desc))
@@ -43,6 +48,24 @@
 namespace CxxSpec {
 
 typedef void (*SpecificationFunction)(ISpecificationVisitor&);
+
+class SpecificationGuard
+{
+public:
+    explicit SpecificationGuard(ISpecificationVisitor& sv)
+        : sv(sv)
+    {
+        sv.beginSpecification();
+    }
+
+    ~SpecificationGuard()
+    {
+        sv.endSpecification();
+    }
+
+private:
+    ISpecificationVisitor& sv;
+};
 
 }
 

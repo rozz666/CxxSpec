@@ -34,12 +34,28 @@ namespace CxxSpec {
 class SpecificationExecutor : public ISpecificationVisitor
 {
 public:
+    SpecificationExecutor() : sectionCounter(0), sectionDone(false) { }
+
+    virtual void beginSpecification() { }
+    virtual void endSpecification() { }
+
     virtual bool beginSection(const std::string& desc)
     {
-        return true;
+        sectionCounter++;
+        return !sectionDone;
     }
-    virtual void endSection() { }
-    bool done() const { return true; }
+    virtual void endSection()
+    {
+        sectionDone = true;
+    }
+    bool done() const
+    {
+        return (sectionCounter == 0) || (sectionDone && sectionCounter == 1);
+    }
+
+private:
+    int sectionCounter;
+    bool sectionDone;
 };
 
 }

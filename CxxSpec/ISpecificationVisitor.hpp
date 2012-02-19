@@ -35,6 +35,8 @@ class ISpecificationVisitor
 {
 public:
     virtual ~ISpecificationVisitor() { }
+    virtual void beginSpecification() = 0;
+    virtual void endSpecification() = 0;
     virtual bool beginSection(const std::string& desc) = 0;
     virtual void endSection() = 0;
 };
