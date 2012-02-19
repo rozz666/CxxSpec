@@ -43,9 +43,9 @@ namespace CxxSpec
 namespace
 {
 
-std::map<std::string, SpecFunction> registeredSpec;
+std::map<std::string, SpecificationFunction> registeredSpec;
 
-void registerSpecification(const std::string& desc, SpecFunction func)
+void registerSpecification(const std::string& desc, SpecificationFunction func)
 {
     registeredSpec.insert(std::make_pair(desc, func));
 }

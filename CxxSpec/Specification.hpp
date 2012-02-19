@@ -42,7 +42,7 @@
 
 namespace CxxSpec {
 
-typedef void (*SpecFunction)(ISpecificationVisitor&);
+typedef void (*SpecificationFunction)(ISpecificationVisitor&);
 
 }
 
