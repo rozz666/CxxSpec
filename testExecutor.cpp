@@ -119,13 +119,21 @@ void testParallel()
     assert(steps[1] == 11);
     assert(steps[2] == 2);
 
-//     steps.clear();
-//     CxxSpec::registeredSpec["parallel"](exec);
-//     assert(!exec.done());
-//     assert(steps.size() == 3);
-//     assert(steps[0] == 1);
-//     assert(steps[1] == 12);
-//     assert(steps[2] == 2);
+    steps.clear();
+    CxxSpec::registeredSpec["parallel"](exec);
+    assert(!exec.done());
+    assert(steps.size() == 3);
+    assert(steps[0] == 1);
+    assert(steps[1] == 12);
+    assert(steps[2] == 2);
+
+    steps.clear();
+    CxxSpec::registeredSpec["parallel"](exec);
+    assert(exec.done());
+    assert(steps.size() == 3);
+    assert(steps[0] == 1);
+    assert(steps[1] == 13);
+    assert(steps[2] == 2);
 }
 
 void testExecutor()
