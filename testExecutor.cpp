@@ -136,9 +136,41 @@ void testParallel()
     assert(steps[2] == 2);
 }
 
+SPECIFICATION("nested")
+{
+    step(1);
+    SECTION("")
+    {
+        step(11);
+        SECTION("")
+        {
+            step(111);
+            SECTION("")
+            {
+                step(1111);
+            }
+        }
+    }
+}
+
+void testExecuteNested()
+{
+    CxxSpec::SpecificationExecutor exec;
+
+    steps.clear();
+    CxxSpec::registeredSpec["nested"](exec);
+    assert(exec.done());
+    assert(steps.size() == 4);
+    assert(steps[0] == 1);
+    assert(steps[1] == 11);
+    assert(steps[2] == 111);
+    assert(steps[3] == 1111);
+}
+
 void testExecutor()
 {
     testExecuteNoSections();
     testExecuteOneSection();
     testParallel();
+    testExecuteNested();
 }

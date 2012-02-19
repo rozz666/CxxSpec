@@ -35,11 +35,13 @@ class SpecificationExecutor : public ISpecificationVisitor
 {
 public:
     SpecificationExecutor()
-        : hasSections(false), sectionsDone(0) { }
+        : sectionsDone(0) { }
 
     virtual void beginSpecification()
     {
         currentSection = 0;
+        lastSectionDone = true;
+        depth = 0;
     }
     virtual void endSpecification()
     {
@@ -48,20 +50,22 @@ public:
 
     virtual bool beginSection(const std::string& desc)
     {
-        hasSections = true;
-        return currentSection == sectionsDone;
+        lastSectionDone = (currentSection == sectionsDone) || depth > 0;
+        ++depth;
+        return lastSectionDone;
     }
     virtual void endSection()
     {
+        --depth;
         currentSection++;
     }
     bool done() const
     {
-        return !hasSections || currentSection == sectionsDone;
+        return lastSectionDone;
     }
 
 private:
-    bool hasSections;
+    int depth;
     int sectionsDone;
     int currentSection;
     bool lastSectionDone;
