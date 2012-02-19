@@ -25,25 +25,33 @@
 */
 
 
-#ifndef CXXSPEC_SPECIFICATION_HPP
-#define CXXSPEC_SPECIFICATION_HPP
-#include <CxxSpec/SectionGuard.hpp>
-
-#define CXXSPEC_CAT2(a, b) a##b
-#define CXXSPEC_CAT(a, b) CXXSPEC_CAT2(a, b)
-#define SPECIFICATION(desc) \
-    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor&); \
-    static int CXXSPEC_CAT(CxxSpec__Specification_register_at_line_, __LINE__) \
-        = (::CxxSpec::registerSpecification(desc, &CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)), 0); \
-    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor)
-
-#define SECTION(desc) \
-    if (const auto& CxxSpec_sectionGuard = ::CxxSpec::SectionGuard(CxxSpec_specificationVisitor, desc))
+#ifndef CXXSPEC_SECTIONGUARD_HPP
+#define CXXSPEC_SECTIONGUARD_HPP
+#include <CxxSpec/ISpecificationVisitor.hpp>
 
 namespace CxxSpec {
 
-typedef void (*SpecFunction)(ISpecificationVisitor&);
+class SectionGuard
+{
+public:
+    explicit SectionGuard(ISpecificationVisitor& sv, const std::string& desc)
+        : sv(sv)
+    {
+        stepIn = sv.beginSection(desc);
+    }
+
+    ~SectionGuard()
+    {
+        sv.endSection();
+    }
+
+    virtual operator bool() const { return stepIn; }
+
+private:
+    bool stepIn;
+    ISpecificationVisitor& sv;
+};
 
 }
 
-#endif // CXXSPEC_SPECIFICATION_HPP
+#endif // CXXSPEC_SECTIONGUARD_HPP
