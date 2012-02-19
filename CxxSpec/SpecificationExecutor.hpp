@@ -42,11 +42,10 @@ public:
     {
         path.swap(nextPath);
         leafVisited = false;
-        more = false;
-        findNext = false;
+        moreNodes = false;
+        expectNextNode = false;
         followingPath = true;
         nodeCount.resize(1);
-        nodeCount[0] = 0;
     }
 
     virtual void endSpecification()
@@ -58,16 +57,20 @@ public:
         nodeCount.back()++;
         nodeCount.push_back(0);
 
-        if (leafVisited) more = true;
         bool enter = getNextStep();
-        if (!leafVisited)
+        if (leafVisited)
+        {
+            moreNodes = true;
+        }
+        else
         {
             nextPath.push_back(enter);
         }
-        if (findNext)
+
+        if (expectNextNode)
         {
             nextPath.push_back(false);
-            findNext = false;
+            expectNextNode = false;
         }
         return enter;
     }
@@ -77,9 +80,9 @@ public:
         if (!leafVisited && !followingPath)
         {
             leafVisited = true;
-            findNext = true;
+            expectNextNode = true;
         }
-        if (findNext)
+        if (expectNextNode)
         {
             int n = nodeCount.back();
             if (n == 0) n = 1;
@@ -91,14 +94,14 @@ public:
 
     bool done() const
     {
-        return !more;
+        return !moreNodes;
     }
 
 private:
 
     std::deque<bool> path, nextPath;
     std::vector<int> nodeCount;
-    bool leafVisited, more, findNext, followingPath;
+    bool leafVisited, moreNodes, expectNextNode, followingPath;
 
     bool getNextStep()
     {
