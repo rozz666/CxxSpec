@@ -107,7 +107,7 @@ SPECIFICATION("parallel")
     step(2);
 }
 
-void testParallel()
+void testExecuteParallel()
 {
     CxxSpec::SpecificationExecutor exec;
 
@@ -242,7 +242,7 @@ void testExecutor()
 {
     testExecuteNoSections();
     testExecuteOneSection();
-    testParallel();
+    testExecuteParallel();
     testExecuteNested();
     testExecuteParallelAndNested();
 }
