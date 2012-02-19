@@ -46,7 +46,7 @@ class ISpecificationVisitor
 {
 public:
     virtual ~ISpecificationVisitor() { }
-    virtual void beginSection(const std::string& desc) = 0;
+    virtual bool beginSection(const std::string& desc) = 0;
     virtual void endSection() = 0;
 };
 
@@ -56,7 +56,7 @@ public:
     explicit SectionGuard(ISpecificationVisitor& sv, const std::string& desc)
         : sv(sv)
     {
-        sv.beginSection(desc);
+        stepIn = sv.beginSection(desc);
     }
 
     ~SectionGuard()
@@ -64,9 +64,10 @@ public:
         sv.endSection();
     }
 
-    operator bool() const { return true; }
+    virtual operator bool() const { return stepIn; }
 
 private:
+    bool stepIn;
     ISpecificationVisitor& sv;
 };
 

@@ -31,7 +31,7 @@
 #include <string>
 #include <map>
 #include <vector>
-
+#include <set>
 
 
 
@@ -97,10 +97,11 @@ public:
     std::vector<SpecOp> ops;
     std::vector<std::string> descs;
 
-    virtual void beginSection(const std::string& desc)
+    virtual bool beginSection(const std::string& desc)
     {
         ops.push_back(BEGIN_SECTION);
         descs.push_back(desc);
+        return true;
     }
 
     virtual void endSection()
@@ -186,6 +187,87 @@ void testSpecificationExecution()
     assert(checkExecuteParam == 7);
 }
 
+namespace
+{
+
+int selectionIndex;
+
+class SelectionVisitor : public CxxSpec::ISpecificationVisitor
+{
+public:
+
+    SelectionVisitor(const std::set<std::string>& selection)
+        : selection(selection) { }
+
+    virtual bool beginSection(const std::string& desc)
+    {
+        return selection.count(desc) > 0;
+    }
+
+    virtual void endSection() { }
+
+private:
+    std::set<std::string> selection;
+};
+
+}
+
+SPECIFICATION("selection")
+{
+    SECTION("first")
+    {
+        selectionIndex = 1;
+        SECTION("second")
+        {
+            selectionIndex = 2;
+        }
+    }
+    SECTION("third")
+    {
+        selectionIndex = 3;
+    }
+}
+
+void runSelection(std::set<std::string> selection)
+{
+    selectionIndex = 0;
+    SelectionVisitor sv(selection);
+    CxxSpec::registeredSpec["selection"](sv);
+}
+
+void testSectionSelectionFirst()
+{
+    std::set<std::string> selection;
+    selection.insert("first");
+    runSelection(selection);
+    assert(selectionIndex == 1);
+}
+
+void testSectionSelectionSecond()
+{
+    std::set<std::string> selection;
+    selection.insert("first");
+    selection.insert("second");
+    runSelection(selection);
+    assert(selectionIndex == 2);
+}
+
+void testSectionSelectionThird()
+{
+    std::set<std::string> selection;
+    selection.insert("third");
+    runSelection(selection);
+    assert(selectionIndex == 3);
+}
+
+void testSectionSelectionNone()
+{
+    std::set<std::string> selection;
+    selection.insert("second");
+    runSelection(selection);
+    assert(selectionIndex == 0);
+}
+
 void testSpecification()
 {
     testRegisterSpecification();
@@ -193,4 +275,8 @@ void testSpecification()
     testNestedSections();
     testSectionSequence();
     testSpecificationExecution();
+    testSectionSelectionFirst();
+    testSectionSelectionSecond();
+    testSectionSelectionThird();
+    testSectionSelectionNone();
 }
