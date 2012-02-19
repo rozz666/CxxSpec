@@ -32,15 +32,15 @@
 #define CXXSPEC_CAT2(a, b) a##b
 #define CXXSPEC_CAT(a, b) CXXSPEC_CAT2(a, b)
 #define SPECIFICATION(desc) \
-    void CXXSPEC_CAT(CxxSpec__Specification_impl_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor); \
-    void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor) \
+    static void CXXSPEC_CAT(CxxSpec__Specification_impl_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor); \
+    static void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor) \
     { \
         ::CxxSpec::SpecificationGuard CxxSpec_specificationGuard(CxxSpec_specificationVisitor);\
         CXXSPEC_CAT(CxxSpec__Specification_impl_at_line_, __LINE__)(CxxSpec_specificationVisitor);\
     } \
     static int CXXSPEC_CAT(CxxSpec__Specification_register_at_line_, __LINE__) \
         = (::CxxSpec::registerSpecification(desc, &CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)), 0); \
-    void CXXSPEC_CAT(CxxSpec__Specification_impl_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor)
+    static void CXXSPEC_CAT(CxxSpec__Specification_impl_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor)
 
 #define SECTION(desc) \
     if (const auto& CxxSpec_sectionGuard = ::CxxSpec::SectionGuard(CxxSpec_specificationVisitor, desc))
