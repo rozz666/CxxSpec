@@ -167,10 +167,82 @@ void testExecuteNested()
     assert(steps[3] == 1111);
 }
 
+SPECIFICATION("parallel and nested")
+{
+    SECTION("")
+    {
+        step(1);
+    }
+    SECTION("")
+    {
+        step(2);
+        SECTION("")
+        {
+            step(21);
+            SECTION("")
+            {
+                step(211);
+            }
+        }
+        SECTION("")
+        {
+            step(22);
+        }
+        SECTION("")
+        {
+            step(23);
+        }
+    }
+    SECTION("")
+    {
+        step(3);
+    }
+}
+
+void testExecuteParallelAndNested()
+{
+    CxxSpec::SpecificationExecutor exec;
+
+    steps.clear();
+    CxxSpec::registeredSpec["parallel and nested"](exec);
+    assert(!exec.done());
+    assert(steps.size() == 1);
+    assert(steps[0] == 1);
+
+    steps.clear();
+    CxxSpec::registeredSpec["parallel and nested"](exec);
+    assert(!exec.done());
+    assert(steps.size() == 3);
+    assert(steps[0] == 2);
+    assert(steps[1] == 21);
+    assert(steps[2] == 211);
+
+    steps.clear();
+    CxxSpec::registeredSpec["parallel and nested"](exec);
+    assert(!exec.done());
+    assert(steps.size() == 2);
+    assert(steps[0] == 2);
+    assert(steps[1] == 22);
+
+    steps.clear();
+    CxxSpec::registeredSpec["parallel and nested"](exec);
+    assert(!exec.done());
+    assert(steps.size() == 2);
+    assert(steps[0] == 2);
+    assert(steps[1] == 23);
+
+    steps.clear();
+    CxxSpec::registeredSpec["parallel and nested"](exec);
+    assert(exec.done());
+    assert(steps.size() == 1);
+    assert(steps[0] == 3);
+}
+
 void testExecutor()
 {
     testExecuteNoSections();
     testExecuteOneSection();
     testParallel();
     testExecuteNested();
+    testExecuteParallelAndNested();
 }

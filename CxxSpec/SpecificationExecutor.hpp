@@ -28,47 +28,89 @@
 #ifndef CXXSPEC_SPECIFICATIONEXECUTOR_HPP
 #define CXXSPEC_SPECIFICATIONEXECUTOR_HPP
 #include <CxxSpec/ISpecificationVisitor.hpp>
+#include <deque>
+#include <vector>
 
 namespace CxxSpec {
 
 class SpecificationExecutor : public ISpecificationVisitor
 {
 public:
-    SpecificationExecutor()
-        : sectionsDone(0) { }
+    SpecificationExecutor() { }
 
     virtual void beginSpecification()
     {
-        currentSection = 0;
-        lastSectionDone = true;
-        depth = 0;
+        path.swap(nextPath);
+        leafVisited = false;
+        more = false;
+        findNext = false;
+        followingPath = true;
+        nodeCount.resize(1);
+        nodeCount[0] = 0;
     }
+
     virtual void endSpecification()
     {
-        sectionsDone++;
     }
 
     virtual bool beginSection(const std::string& desc)
     {
-        lastSectionDone = (currentSection == sectionsDone) || depth > 0;
-        ++depth;
-        return lastSectionDone;
+        nodeCount.back()++;
+        nodeCount.push_back(0);
+
+        if (leafVisited) more = true;
+        bool enter = getNextStep();
+        if (!leafVisited)
+        {
+            nextPath.push_back(enter);
+        }
+        if (findNext)
+        {
+            nextPath.push_back(false);
+            findNext = false;
+        }
+        return enter;
     }
+
     virtual void endSection()
     {
-        --depth;
-        currentSection++;
+        if (!leafVisited && !followingPath)
+        {
+            leafVisited = true;
+            findNext = true;
+        }
+        if (findNext)
+        {
+            int n = nodeCount.back();
+            if (n == 0) n = 1;
+            while (n--)
+                nextPath.pop_back();
+        }
+        nodeCount.pop_back();
     }
+
     bool done() const
     {
-        return lastSectionDone;
+        return !more;
     }
 
 private:
-    int depth;
-    int sectionsDone;
-    int currentSection;
-    bool lastSectionDone;
+
+    std::deque<bool> path, nextPath;
+    std::vector<int> nodeCount;
+    bool leafVisited, more, findNext, followingPath;
+
+    bool getNextStep()
+    {
+        if (path.empty())
+        {
+            followingPath = false;
+            return !leafVisited;
+        }
+        bool next = path.front();
+        path.pop_front();
+        return next;
+    }
 };
 
 }
