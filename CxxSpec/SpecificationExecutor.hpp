@@ -36,16 +36,20 @@ namespace CxxSpec {
 class SpecificationExecutor : public ISpecificationVisitor
 {
 public:
-    SpecificationExecutor() { }
+    SpecificationExecutor()
+    {
+        nextPath.push_back(0);
+    }
 
     virtual void beginSpecification()
     {
         state.beginSection = &SpecificationExecutor::following_beginSection;
         state.endSection = &SpecificationExecutor::following_endSection;
 
-        path.swap(nextPath);
+        path = nextPath;
+        nextPath.clear();
+        nextPath.push_back(0);
         moreNodes = false;
-        nodeCount.resize(1);
     }
 
     virtual void endSpecification()
@@ -69,10 +73,6 @@ public:
 
 private:
 
-    std::deque<bool> path, nextPath;
-    std::vector<int> nodeCount;
-    bool moreNodes;
-
     struct State
     {
         bool (SpecificationExecutor:: *beginSection)(const std::string& desc);
@@ -80,54 +80,51 @@ private:
     };
 
     State state;
-
-    void pushCount()
-    {
-        nodeCount.back()++;
-        nodeCount.push_back(0);
-    }
-
-    void popCount()
-    {
-        int n = nodeCount.back();
-        if (n == 0) n = 1;
-        while (n--)
-            nextPath.pop_back();
-        nodeCount.pop_back();
-    }
+    std::deque<int> path, nextPath;
+    bool moreNodes;
 
     bool getNextStep()
     {
-        if (path.empty())
+        if (path.front() == 0)
         {
-            state.beginSection = &SpecificationExecutor::running_beginSection;
-            state.endSection = &SpecificationExecutor::running_endSection;
+            path.pop_front();
+            if (path.empty())
+            {
+                state.beginSection = &SpecificationExecutor::running_beginSection;
+                state.endSection = &SpecificationExecutor::running_endSection;
+            }
             return true;
         }
-        bool next = path.front();
-        path.pop_front();
-        return next;
+
+        path.front()--;
+        return false;
+    }
+
+    void pushNext()
+    {
+        nextPath.push_back(0);
+    }
+
+    void popNext()
+    {
+        nextPath.pop_back();
+        nextPath.back()++;
     }
 
     bool following_beginSection(const std::string& desc)
     {
-        nodeCount.back()++;
-        nodeCount.push_back(0);
-
-        bool enter = getNextStep();
-        nextPath.push_back(enter);
-        return enter;
+        pushNext();
+        return getNextStep();
     }
 
     void following_endSection()
     {
-        nodeCount.pop_back();
+        popNext();
     }
 
     bool running_beginSection(const std::string& desc)
     {
-        pushCount();
-        nextPath.push_back(true);
+        pushNext();
         return true;
     }
 
@@ -136,16 +133,13 @@ private:
         state.beginSection = &SpecificationExecutor::expectNode_beginSection;
         state.endSection = &SpecificationExecutor::expectNode_endSection;
 
-        popCount();
+        popNext();
     }
 
     bool expectNode_beginSection(const std::string& desc)
     {
-        pushCount();
-
         moreNodes = true;
 
-        nextPath.push_back(false);
         state.beginSection = &SpecificationExecutor::finishing_beginSection;
         state.endSection = &SpecificationExecutor::finishing_endSection;
         return false;
@@ -153,7 +147,7 @@ private:
 
     void expectNode_endSection()
     {
-        popCount();
+        popNext();
     }
 
     bool finishing_beginSection(const std::string&)
