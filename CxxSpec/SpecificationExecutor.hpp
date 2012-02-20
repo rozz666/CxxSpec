@@ -40,11 +40,11 @@ public:
 
     virtual void beginSpecification()
     {
+        state.beginSection = &SpecificationExecutor::following_beginSection;
+        state.endSection = &SpecificationExecutor::following_endSection;
+
         path.swap(nextPath);
-        leafVisited = false;
         moreNodes = false;
-        expectNextNode = false;
-        followingPath = true;
         nodeCount.resize(1);
     }
 
@@ -54,42 +54,12 @@ public:
 
     virtual bool beginSection(const std::string& desc)
     {
-        nodeCount.back()++;
-        nodeCount.push_back(0);
-
-        bool enter = getNextStep();
-        if (leafVisited)
-        {
-            moreNodes = true;
-        }
-        else
-        {
-            nextPath.push_back(enter);
-        }
-
-        if (expectNextNode)
-        {
-            nextPath.push_back(false);
-            expectNextNode = false;
-        }
-        return enter;
+        return (this->*state.beginSection)(desc);
     }
 
     virtual void endSection()
     {
-        if (!leafVisited && !followingPath)
-        {
-            leafVisited = true;
-            expectNextNode = true;
-        }
-        if (expectNextNode)
-        {
-            int n = nodeCount.back();
-            if (n == 0) n = 1;
-            while (n--)
-                nextPath.pop_back();
-        }
-        nodeCount.pop_back();
+        (this->*state.endSection)();
     }
 
     bool done() const
@@ -101,18 +71,98 @@ private:
 
     std::deque<bool> path, nextPath;
     std::vector<int> nodeCount;
-    bool leafVisited, moreNodes, expectNextNode, followingPath;
+    bool moreNodes;
+
+    struct State
+    {
+        bool (SpecificationExecutor:: *beginSection)(const std::string& desc);
+        void (SpecificationExecutor:: *endSection)();
+    };
+
+    State state;
+
+    void pushCount()
+    {
+        nodeCount.back()++;
+        nodeCount.push_back(0);
+    }
+
+    void popCount()
+    {
+        int n = nodeCount.back();
+        if (n == 0) n = 1;
+        while (n--)
+            nextPath.pop_back();
+        nodeCount.pop_back();
+    }
 
     bool getNextStep()
     {
         if (path.empty())
         {
-            followingPath = false;
-            return !leafVisited;
+            state.beginSection = &SpecificationExecutor::running_beginSection;
+            state.endSection = &SpecificationExecutor::running_endSection;
+            return true;
         }
         bool next = path.front();
         path.pop_front();
         return next;
+    }
+
+    bool following_beginSection(const std::string& desc)
+    {
+        nodeCount.back()++;
+        nodeCount.push_back(0);
+
+        bool enter = getNextStep();
+        nextPath.push_back(enter);
+        return enter;
+    }
+
+    void following_endSection()
+    {
+        nodeCount.pop_back();
+    }
+
+    bool running_beginSection(const std::string& desc)
+    {
+        pushCount();
+        nextPath.push_back(true);
+        return true;
+    }
+
+    void running_endSection()
+    {
+        state.beginSection = &SpecificationExecutor::expectNode_beginSection;
+        state.endSection = &SpecificationExecutor::expectNode_endSection;
+
+        popCount();
+    }
+
+    bool expectNode_beginSection(const std::string& desc)
+    {
+        pushCount();
+
+        moreNodes = true;
+
+        nextPath.push_back(false);
+        state.beginSection = &SpecificationExecutor::finishing_beginSection;
+        state.endSection = &SpecificationExecutor::finishing_endSection;
+        return false;
+    }
+
+    void expectNode_endSection()
+    {
+        popCount();
+    }
+
+    bool finishing_beginSection(const std::string&)
+    {
+        return false;
+    }
+
+    void finishing_endSection()
+    {
     }
 };
 
