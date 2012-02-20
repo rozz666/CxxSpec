@@ -28,7 +28,6 @@
 #ifndef CXXSPEC_SPECIFICATIONEXECUTOR_HPP
 #define CXXSPEC_SPECIFICATIONEXECUTOR_HPP
 #include <CxxSpec/ISpecificationVisitor.hpp>
-#include <deque>
 #include <vector>
 
 namespace CxxSpec {
@@ -38,7 +37,7 @@ class SpecificationExecutor : public ISpecificationVisitor
 public:
     SpecificationExecutor()
     {
-        nextPath.push_back(0);
+        pushNext();
     }
 
     virtual void beginSpecification()
@@ -46,7 +45,7 @@ public:
         state.beginSection = &SpecificationExecutor::following_beginSection;
         state.endSection = &SpecificationExecutor::following_endSection;
 
-        path = nextPath;
+        path.assign(nextPath.rbegin(), nextPath.rend());
         nextPath.clear();
         nextPath.push_back(0);
         moreNodes = false;
@@ -80,14 +79,14 @@ private:
     };
 
     State state;
-    std::deque<int> path, nextPath;
+    std::vector<int> path, nextPath;
     bool moreNodes;
 
     bool getNextStep()
     {
-        if (path.front() == 0)
+        if (path.back() == 0)
         {
-            path.pop_front();
+            path.pop_back();
             if (path.empty())
             {
                 state.beginSection = &SpecificationExecutor::running_beginSection;
@@ -96,7 +95,7 @@ private:
             return true;
         }
 
-        path.front()--;
+        path.back()--;
         return false;
     }
 
