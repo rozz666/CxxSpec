@@ -5,13 +5,15 @@
 #include "testSpecificationRegistry.hpp"
 #include <CxxSpec/CxxSpec.hpp>
 #include <CxxSpec/ConsoleSpecificationObserver.hpp>
+#include "testConsoleSpecificationObserver.hpp"
 
 int main(int argc, char **argv) {
     testSpecification();
     testExecutor();
     testAssertions();
     testSpecificationRegistry();
+    testConsoleSpecificationObserver();
 
-    CxxSpec::ConsoleSpecificationObserver cso;
+    CxxSpec::ConsoleSpecificationObserver cso(std::cerr);
     CxxSpec::SpecificationRegistry::getInstance().runAll(cso);
 }

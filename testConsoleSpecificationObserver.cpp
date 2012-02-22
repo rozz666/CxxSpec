@@ -24,27 +24,33 @@
     DEALINGS IN THE SOFTWARE.
 */
 
+#include <CxxSpec/ConsoleSpecificationObserver.hpp>
+#include <CxxSpec/Assert.hpp>
+#include "testConsoleSpecificationObserver.hpp"
+#include <sstream>
+#include <iostream>
 
-#ifndef CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
-#define CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
-#include <ostream>
-#include <CxxSpec/ISpecificationObserver.hpp>
-
-namespace CxxSpec {
-
-class ConsoleSpecificationObserver : public ISpecificationObserver
+namespace
 {
-public:
-    ConsoleSpecificationObserver(std::ostream& os) : os(os) { }
-    virtual void testFailed(const CxxSpec::AssertionFailed& af)
-    {
-        os << "Assertion failed: " << af.expression() << std::endl;
-        os << "At " << af.file() << ":" << af.line() << std::endl;
-    }
-private:
-    std::ostream& os;
-};
+
+void testHandleFailedTest()
+{
+    std::ostringstream os;
+    CxxSpec::ConsoleSpecificationObserver cso(os);
+    cso.testFailed(CxxSpec::AssertionFailed("file", 99, "expression"));
+    ASSERT_THAT(os.str() == "Assertion failed: expression\nAt file:99\n");
+}
 
 }
 
-#endif // CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
+void testConsoleSpecificationObserver()
+{
+    try
+    {
+        testHandleFailedTest();
+    }
+    catch (const CxxSpec::AssertionFailed& af)
+    {
+        std::cerr << af.file() << ":" << af.line() << ": Assertion failed: " << af.expression() << std::endl;
+    }
+}

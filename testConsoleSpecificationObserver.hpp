@@ -25,26 +25,9 @@
 */
 
 
-#ifndef CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
-#define CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
-#include <ostream>
-#include <CxxSpec/ISpecificationObserver.hpp>
+#ifndef TESTCONSOLESPECIFICATIONOBSERVER_HPP
+#define TESTCONSOLESPECIFICATIONOBSERVER_HPP
 
-namespace CxxSpec {
+void testConsoleSpecificationObserver();
 
-class ConsoleSpecificationObserver : public ISpecificationObserver
-{
-public:
-    ConsoleSpecificationObserver(std::ostream& os) : os(os) { }
-    virtual void testFailed(const CxxSpec::AssertionFailed& af)
-    {
-        os << "Assertion failed: " << af.expression() << std::endl;
-        os << "At " << af.file() << ":" << af.line() << std::endl;
-    }
-private:
-    std::ostream& os;
-};
-
-}
-
-#endif // CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
+#endif // TESTCONSOLESPECIFICATIONOBSERVER_HPP
