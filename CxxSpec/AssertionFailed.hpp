@@ -25,11 +25,29 @@
 */
 
 
-#ifndef CXXSPEC_ASSERT_HPP
-#define CXXSPEC_ASSERT_HPP
-#include <CxxSpec/AssertionFailed.hpp>
+#ifndef CXXSPEC_ASSERTIONFAILED_HPP
+#define CXXSPEC_ASSERTIONFAILED_HPP
+#include <string>
 
-#define ASSERT_THAT(expr) \
-    do { if (!(expr)) throw CxxSpec::AssertionFailed(__FILE__, __LINE__, #expr); } while (0)
+namespace CxxSpec {
 
-#endif // CXXSPEC_ASSERT_HPP
+class AssertionFailed
+{
+public:
+    AssertionFailed(const std::string& file, int line, const std::string& expression)
+        : file_(file), line_(line), expression_(expression) { }
+
+    std::string file() const { return file_; }
+    int line() const { return line_; }
+    std::string expression() const { return expression_; }
+
+private:
+    std::string file_;
+    int line_;
+    std::string expression_;
+};
+
+
+}
+
+#endif // CXXSPEC_ASSERTIONFAILED_HPP

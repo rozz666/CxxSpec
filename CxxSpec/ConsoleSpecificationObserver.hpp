@@ -25,11 +25,19 @@
 */
 
 
-#ifndef CXXSPEC_ASSERT_HPP
-#define CXXSPEC_ASSERT_HPP
-#include <CxxSpec/AssertionFailed.hpp>
+#ifndef CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
+#define CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
 
-#define ASSERT_THAT(expr) \
-    do { if (!(expr)) throw CxxSpec::AssertionFailed(__FILE__, __LINE__, #expr); } while (0)
+#include <CxxSpec/ISpecificationObserver.hpp>
 
-#endif // CXXSPEC_ASSERT_HPP
+namespace CxxSpec {
+
+class ConsoleSpecificationObserver : public ISpecificationObserver
+{
+public:
+    virtual void testFailed(const CxxSpec::AssertionFailed& ) { }
+};
+
+}
+
+#endif // CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP

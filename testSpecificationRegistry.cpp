@@ -28,6 +28,7 @@
 #include <CxxSpec/Assert.hpp>
 #include "testSpecificationRegistry.hpp"
 #include <iostream>
+#include <CxxSpec/ISpecificationObserver.hpp>
 
 namespace
 {
@@ -38,6 +39,16 @@ class SpecificationVisitorStub : public CxxSpec::ISpecificationVisitor
     virtual void endSpecification() { }
     virtual bool beginSection(const std::string& ) { return false; }
     virtual void endSection() { }
+};
+
+struct SpecificationObserverFake : CxxSpec::ISpecificationObserver
+{
+    std::string expression;
+
+    virtual void testFailed(const CxxSpec::AssertionFailed& af)
+    {
+        expression = af.expression();
+    }
 };
 
 bool dummySpecification1Called;
@@ -55,8 +66,6 @@ void dummySpecification2(CxxSpec::ISpecificationVisitor& sv)
     dummySpecification2Called = true;
 }
 
-}
-
 void testRegisterAndRun()
 {
     SpecificationVisitorStub sv;
@@ -68,11 +77,39 @@ void testRegisterAndRun()
     dummySpecification1Visitor = nullptr;
     dummySpecification2Called = false;
 
-    registry.runAll();
+    SpecificationObserverFake so;
+    registry.runAll(so);
 
     ASSERT_THAT(dummySpecification1Called);
     ASSERT_THAT(dummySpecification1Visitor == &sv);
     ASSERT_THAT(dummySpecification2Called);
+}
+
+void testRunEmpty()
+{
+    SpecificationVisitorStub sv;
+    CxxSpec::SpecificationRegistry registry(sv);
+    SpecificationObserverFake so;
+    registry.runAll(so);
+}
+
+void specificationWithError1(CxxSpec::ISpecificationVisitor& sv)
+{
+    ASSERT_THAT(1 == 2);
+}
+
+void testRunWithErrors()
+{
+    SpecificationVisitorStub sv;
+    CxxSpec::SpecificationRegistry registry(sv);
+    registry.registerSpecification("", &specificationWithError1);
+
+    SpecificationObserverFake so;
+
+    registry.runAll(so);
+    ASSERT_THAT(so.expression == "1 == 2");
+}
+
 }
 
 void testSpecificationRegistry()
@@ -80,6 +117,8 @@ void testSpecificationRegistry()
     try
     {
         testRegisterAndRun();
+        testRunEmpty();
+        testRunWithErrors();
     }
     catch (const CxxSpec::AssertionFailed& af)
     {

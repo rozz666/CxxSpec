@@ -30,11 +30,14 @@
 #include <CxxSpec/ISpecificationVisitor.hpp>
 #include <CxxSpec/Specification.hpp>
 #include <CxxSpec/SpecificationExecutor.hpp>
+#include <CxxSpec/ISpecificationObserver.hpp>
+#include <CxxSpec/Assert.hpp>
 #include <vector>
 #include <algorithm>
 
 namespace CxxSpec
 {
+
 
 
 class SpecificationRegistry
@@ -56,11 +59,18 @@ public:
     {
         specs.push_back(f);
     }
-    void runAll()
+    void runAll(ISpecificationObserver& so)
     {
-        for (auto it : specs)
+        try
         {
-            (*it)(specificationVisitor);
+            for (auto it : specs)
+            {
+                (*it)(specificationVisitor);
+            }
+        }
+        catch (const AssertionFailed& af)
+        {
+            so.testFailed(af);
         }
     }
 private:
