@@ -61,16 +61,16 @@ public:
     }
     void runAll(ISpecificationObserver& so)
     {
-        try
+        for (auto it : specs)
         {
-            for (auto it : specs)
+            try
             {
                 (*it)(specificationVisitor);
             }
-        }
-        catch (const AssertionFailed& af)
-        {
-            so.testFailed(af);
+            catch (const AssertionFailed& af)
+            {
+                so.testFailed(af);
+            }
         }
     }
 private:

@@ -43,11 +43,11 @@ class SpecificationVisitorStub : public CxxSpec::ISpecificationVisitor
 
 struct SpecificationObserverFake : CxxSpec::ISpecificationObserver
 {
-    std::string expression;
+    std::vector<std::string> expressions;
 
     virtual void testFailed(const CxxSpec::AssertionFailed& af)
     {
-        expression = af.expression();
+        expressions.push_back(af.expression());
     }
 };
 
@@ -98,16 +98,24 @@ void specificationWithError1(CxxSpec::ISpecificationVisitor& sv)
     ASSERT_THAT(1 == 2);
 }
 
+void specificationWithError2(CxxSpec::ISpecificationVisitor& sv)
+{
+    ASSERT_THAT(3 != 3);
+}
+
 void testRunWithErrors()
 {
     SpecificationVisitorStub sv;
     CxxSpec::SpecificationRegistry registry(sv);
     registry.registerSpecification("", &specificationWithError1);
+    registry.registerSpecification("", &specificationWithError2);
 
     SpecificationObserverFake so;
 
     registry.runAll(so);
-    ASSERT_THAT(so.expression == "1 == 2");
+    ASSERT_THAT(so.expressions.size() == 2);
+    ASSERT_THAT(so.expressions[0] == "1 == 2");
+    ASSERT_THAT(so.expressions[1] == "3 != 3");
 }
 
 }
