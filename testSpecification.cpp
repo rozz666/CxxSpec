@@ -30,11 +30,11 @@
 #include <map>
 #include <vector>
 #include <set>
+#include <SpecificationVisitorMock.hpp>
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
-
-
-
+using namespace testing;
 
 
 
@@ -82,57 +82,18 @@ SPECIFICATION("one section")
     }
 }
 
-namespace
-{
-
-enum SpecOp
-{
-    BEGIN_SPECIFICATION,
-    END_SPECIFICATION,
-    BEGIN_SECTION,
-    END_SECTION
-};
-
-class SpecificationVisitor : public ::CxxSpec::ISpecificationVisitor
-{
-public:
-    std::vector<SpecOp> ops;
-    std::vector<std::string> descs;
-
-    virtual void beginSpecification()
-    {
-        ops.push_back(BEGIN_SPECIFICATION);
-    }
-
-    virtual void endSpecification()
-    {
-        ops.push_back(END_SPECIFICATION);
-    }
-
-    virtual bool beginSection(const std::string& desc)
-    {
-        ops.push_back(BEGIN_SECTION);
-        descs.push_back(desc);
-        return true;
-    }
-
-    virtual void endSection()
-    {
-        ops.push_back(END_SECTION);
-    }
-};
-
-}
-
 TEST(SpecificationExecutorTest, OneSection)
 {
-    SpecificationVisitor sv;
+    StrictMock<SpecificationVisitorMock> sv;
+    {
+        InSequence seq;
+        EXPECT_CALL(sv, beginSpecification());
+        EXPECT_CALL(sv, beginSection(_))
+            .WillOnce(Return(false));
+        EXPECT_CALL(sv, endSection());
+        EXPECT_CALL(sv, endSpecification());
+    }
     CxxSpec::registeredSpec["one section"](sv);
-    ASSERT_EQ(4u, sv.ops.size());
-    ASSERT_EQ(BEGIN_SPECIFICATION, sv.ops[0]);
-    ASSERT_EQ(BEGIN_SECTION, sv.ops[1]);
-    ASSERT_EQ(END_SECTION, sv.ops[2]);
-    ASSERT_EQ(END_SPECIFICATION, sv.ops[3]);
 }
 
 SPECIFICATION("nested sections")
@@ -147,17 +108,19 @@ SPECIFICATION("nested sections")
 
 TEST(SpecificationExecutorTest, NestedSections)
 {
-    SpecificationVisitor sv;
+    StrictMock<SpecificationVisitorMock> sv;
+    {
+        InSequence seq;
+        EXPECT_CALL(sv, beginSpecification());
+        EXPECT_CALL(sv, beginSection("outer"))
+            .WillOnce(Return(true));
+        EXPECT_CALL(sv, beginSection("inner"))
+            .WillOnce(Return(true));
+        EXPECT_CALL(sv, endSection());
+        EXPECT_CALL(sv, endSection());
+        EXPECT_CALL(sv, endSpecification());
+    }
     CxxSpec::registeredSpec["nested sections"](sv);
-    ASSERT_EQ(6u, sv.ops.size());
-    ASSERT_EQ(BEGIN_SPECIFICATION, sv.ops[0]);
-    ASSERT_EQ(BEGIN_SECTION, sv.ops[1]);
-    ASSERT_EQ("outer", sv.descs[0]);
-    ASSERT_EQ(BEGIN_SECTION, sv.ops[2]);
-    ASSERT_EQ("inner", sv.descs[1]);
-    ASSERT_EQ(END_SECTION, sv.ops[3]);
-    ASSERT_EQ(END_SECTION, sv.ops[4]);
-    ASSERT_EQ(END_SPECIFICATION, sv.ops[5]);
 }
 
 SPECIFICATION("section sequence")
@@ -169,13 +132,20 @@ SPECIFICATION("section sequence")
 
 TEST(SpecificationExecutorTest, SectionSequence)
 {
-    SpecificationVisitor sv;
+    NiceMock<SpecificationVisitorMock> sv;
+    {
+        InSequence seq;
+         EXPECT_CALL(sv, beginSection("1"))
+             .WillOnce(Return(true));
+        EXPECT_CALL(sv, endSection());
+        EXPECT_CALL(sv, beginSection("2"))
+            .WillOnce(Return(true));
+        EXPECT_CALL(sv, endSection());
+        EXPECT_CALL(sv, beginSection("3"))
+            .WillOnce(Return(true));
+        EXPECT_CALL(sv, endSection());
+    }
     CxxSpec::registeredSpec["section sequence"](sv);
-    ASSERT_EQ(8u, sv.ops.size());
-    ASSERT_EQ(BEGIN_SECTION, sv.ops[1]);
-    ASSERT_EQ(BEGIN_SECTION, sv.ops[3]);
-    ASSERT_EQ(BEGIN_SECTION, sv.ops[5]);
-    ASSERT_EQ(END_SECTION, sv.ops[6]);
 }
 
 namespace
@@ -197,7 +167,7 @@ SPECIFICATION("execution")
 
 TEST(SpecificationExecutorTest, SpecificationExecution)
 {
-    SpecificationVisitor sv;
+    NiceMock<SpecificationVisitorMock> sv;
     checkExecuteParam = 0;
     CxxSpec::registeredSpec["execution"](sv);
     ASSERT_EQ(7, checkExecuteParam);
