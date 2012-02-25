@@ -26,31 +26,14 @@
 
 #include <CxxSpec/ConsoleSpecificationObserver.hpp>
 #include <CxxSpec/Assert.hpp>
-#include "testConsoleSpecificationObserver.hpp"
 #include <sstream>
 #include <iostream>
+#include <gtest/gtest.h>
 
-namespace
-{
-
-void testHandleFailedTest()
+TEST(ConsoleSpecificationObserver, handleFailedTest)
 {
     std::ostringstream os;
     CxxSpec::ConsoleSpecificationObserver cso(os);
     cso.testFailed(CxxSpec::AssertionFailed("file", 99, "expression"));
     ASSERT_THAT(os.str() == "Assertion failed: expression\nAt file:99\n");
-}
-
-}
-
-void testConsoleSpecificationObserver()
-{
-    try
-    {
-        testHandleFailedTest();
-    }
-    catch (const CxxSpec::AssertionFailed& af)
-    {
-        std::cerr << af.file() << ":" << af.line() << ": Assertion failed: " << af.expression() << std::endl;
-    }
 }
