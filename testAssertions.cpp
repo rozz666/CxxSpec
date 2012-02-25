@@ -33,15 +33,11 @@
 
 TEST(AssertionTest, assertionPass)
 {
-    try
+    ASSERT_NO_THROW(
     {
         ASSERT_THAT(true);
         ASSERT_THAT(1 * 0 == 0);
-    }
-    catch (...)
-    {
-        assert(!"assertion failed");
-    }
+    });
 }
 
 TEST(AssertionTest, assertionFail)
@@ -50,12 +46,12 @@ TEST(AssertionTest, assertionFail)
     try
     {
         line = __LINE__; ASSERT_THAT(false);
-        assert(!"must throw");
+        FAIL() << "must throw";
     }
     catch (const CxxSpec::AssertionFailed& af)
     {
-        assert(af.file() == __FILE__);
-        assert(af.line() == line);
-        assert(af.expression() == "false");
+        ASSERT_EQ(__FILE__, af.file());
+        ASSERT_EQ(line, af.line());
+        ASSERT_EQ("false", af.expression());
     }
 }
