@@ -34,22 +34,28 @@ namespace CxxSpec {
 class SectionGuard
 {
 public:
+    SectionGuard(const SectionGuard& ) = delete;
     explicit SectionGuard(ISpecificationVisitor& sv, const std::string& desc)
-        : sv(sv)
+        : sv(&sv)
     {
         stepIn = sv.beginSection(desc);
     }
 
+    SectionGuard(SectionGuard&& other) : sv(other.sv)
+    {
+        other.sv = nullptr;
+    }
+
     ~SectionGuard()
     {
-        sv.endSection();
+        if (sv) sv->endSection();
     }
 
     virtual operator bool() const { return stepIn; }
 
 private:
     bool stepIn;
-    ISpecificationVisitor& sv;
+    ISpecificationVisitor *sv;
 };
 
 }

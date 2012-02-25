@@ -43,7 +43,7 @@
     static void CXXSPEC_CAT(CxxSpec__Specification_impl_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor)
 
 #define SECTION(desc) \
-    if (const auto& CxxSpec_sectionGuard = ::CxxSpec::SectionGuard(CxxSpec_specificationVisitor, desc))
+    if (auto CxxSpec_sectionGuard = ::CxxSpec::SectionGuard(CxxSpec_specificationVisitor, desc))
 
 namespace CxxSpec {
 
