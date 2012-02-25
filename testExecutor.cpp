@@ -25,12 +25,11 @@
 */
 
 
-#include "testExecutor.hpp"
 #include <CxxSpec/Specification.hpp>
 #include <CxxSpec/SpecificationExecutor.hpp>
 #include <map>
-#include <cassert>
 #include <vector>
+#include <gtest/gtest.h>
 
 namespace CxxSpec
 {
@@ -59,14 +58,14 @@ SPECIFICATION("no sections")
     step(1);
 }
 
-void testExecuteNoSections()
+TEST(SpecificationExecutorTest, executeNoSections)
 {
     steps.clear();
     CxxSpec::SpecificationExecutor exec;
     CxxSpec::registeredSpec["no sections"](exec);
-    assert(exec.done());
-    assert(steps.size() == 1);
-    assert(steps[0] == 1);
+    ASSERT_TRUE(exec.done());
+    ASSERT_EQ(1u, steps.size());
+    ASSERT_EQ(1, steps[0]);
 }
 
 SPECIFICATION("one section")
@@ -78,15 +77,15 @@ SPECIFICATION("one section")
     }
 }
 
-void testExecuteOneSection()
+TEST(SpecificationExecutorTest, executeOneSection)
 {
     steps.clear();
     CxxSpec::SpecificationExecutor exec;
     CxxSpec::registeredSpec["one section"](exec);
-    assert(exec.done());
-    assert(steps.size() == 2);
-    assert(steps[0] == 1);
-    assert(steps[1] == 2);
+    ASSERT_TRUE(exec.done());
+    ASSERT_EQ(2u, steps.size());
+    ASSERT_EQ(1, steps[0]);
+    ASSERT_EQ(2, steps[1]);
 }
 
 SPECIFICATION("parallel")
@@ -107,33 +106,33 @@ SPECIFICATION("parallel")
     step(2);
 }
 
-void testExecuteParallel()
+TEST(SpecificationExecutorTest, executeParallel)
 {
     CxxSpec::SpecificationExecutor exec;
 
     steps.clear();
     CxxSpec::registeredSpec["parallel"](exec);
-    assert(!exec.done());
-    assert(steps.size() == 3);
-    assert(steps[0] == 1);
-    assert(steps[1] == 11);
-    assert(steps[2] == 2);
+    ASSERT_FALSE(exec.done());
+    ASSERT_EQ(3u, steps.size());
+    ASSERT_EQ(1, steps[0]);
+    ASSERT_EQ(11, steps[1]);
+    ASSERT_EQ(2, steps[2]);
 
     steps.clear();
     CxxSpec::registeredSpec["parallel"](exec);
-    assert(!exec.done());
-    assert(steps.size() == 3);
-    assert(steps[0] == 1);
-    assert(steps[1] == 12);
-    assert(steps[2] == 2);
+    ASSERT_FALSE(exec.done());
+    ASSERT_EQ(3u, steps.size());
+    ASSERT_EQ(1, steps[0]);
+    ASSERT_EQ(12, steps[1]);
+    ASSERT_EQ(2, steps[2]);
 
     steps.clear();
     CxxSpec::registeredSpec["parallel"](exec);
-    assert(exec.done());
-    assert(steps.size() == 3);
-    assert(steps[0] == 1);
-    assert(steps[1] == 13);
-    assert(steps[2] == 2);
+    ASSERT_TRUE(exec.done());
+    ASSERT_EQ(3u, steps.size());
+    ASSERT_EQ(1, steps[0]);
+    ASSERT_EQ(13, steps[1]);
+    ASSERT_EQ(2, steps[2]);
 }
 
 SPECIFICATION("nested")
@@ -153,18 +152,18 @@ SPECIFICATION("nested")
     }
 }
 
-void testExecuteNested()
+TEST(SpecificationExecutorTest, executeNested)
 {
     CxxSpec::SpecificationExecutor exec;
 
     steps.clear();
     CxxSpec::registeredSpec["nested"](exec);
-    assert(exec.done());
-    assert(steps.size() == 4);
-    assert(steps[0] == 1);
-    assert(steps[1] == 11);
-    assert(steps[2] == 111);
-    assert(steps[3] == 1111);
+    ASSERT_TRUE(exec.done());
+    ASSERT_EQ(4u, steps.size());
+    ASSERT_EQ(1, steps[0]);
+    ASSERT_EQ(11, steps[1]);
+    ASSERT_EQ(111, steps[2]);
+    ASSERT_EQ(1111, steps[3]);
 }
 
 SPECIFICATION("parallel and nested")
@@ -199,50 +198,41 @@ SPECIFICATION("parallel and nested")
     }
 }
 
-void testExecuteParallelAndNested()
+TEST(SpecificationExecutorTest, executeParallelAndNested)
 {
     CxxSpec::SpecificationExecutor exec;
 
     steps.clear();
     CxxSpec::registeredSpec["parallel and nested"](exec);
-    assert(!exec.done());
-    assert(steps.size() == 1);
-    assert(steps[0] == 1);
+    ASSERT_FALSE(exec.done());
+    ASSERT_EQ(1u, steps.size());
+    ASSERT_EQ(1, steps[0]);
 
     steps.clear();
     CxxSpec::registeredSpec["parallel and nested"](exec);
-    assert(!exec.done());
-    assert(steps.size() == 3);
-    assert(steps[0] == 2);
-    assert(steps[1] == 21);
-    assert(steps[2] == 211);
+    ASSERT_FALSE(exec.done());
+    ASSERT_EQ(3u, steps.size());
+    ASSERT_EQ(2, steps[0]);
+    ASSERT_EQ(21, steps[1]);
+    ASSERT_EQ(211, steps[2]);
 
     steps.clear();
     CxxSpec::registeredSpec["parallel and nested"](exec);
-    assert(!exec.done());
-    assert(steps.size() == 2);
-    assert(steps[0] == 2);
-    assert(steps[1] == 22);
+    ASSERT_FALSE(exec.done());
+    ASSERT_EQ(2u, steps.size());
+    ASSERT_EQ(2, steps[0]);
+    ASSERT_EQ(22, steps[1]);
 
     steps.clear();
     CxxSpec::registeredSpec["parallel and nested"](exec);
-    assert(!exec.done());
-    assert(steps.size() == 2);
-    assert(steps[0] == 2);
-    assert(steps[1] == 23);
+    ASSERT_FALSE(exec.done());
+    ASSERT_EQ(2u, steps.size());
+    ASSERT_EQ(2, steps[0]);
+    ASSERT_EQ(23, steps[1]);
 
     steps.clear();
     CxxSpec::registeredSpec["parallel and nested"](exec);
-    assert(exec.done());
-    assert(steps.size() == 1);
-    assert(steps[0] == 3);
-}
-
-void testExecutor()
-{
-    testExecuteNoSections();
-    testExecuteOneSection();
-    testExecuteParallel();
-    testExecuteNested();
-    testExecuteParallelAndNested();
+    ASSERT_TRUE(exec.done());
+    ASSERT_EQ(1u, steps.size());
+    ASSERT_EQ(3, steps[0]);
 }
