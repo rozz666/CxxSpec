@@ -25,13 +25,9 @@
 */
 
 #include <CxxSpec/SpecificationRegistry.hpp>
-#include <CxxSpec/Assert.hpp>
-#include "testSpecificationRegistry.hpp"
 #include <iostream>
 #include <CxxSpec/ISpecificationObserver.hpp>
-
-namespace
-{
+#include <gtest/gtest.h>
 
 class SpecificationVisitorStub : public CxxSpec::ISpecificationVisitor
 {
@@ -66,7 +62,7 @@ void dummySpecification2(CxxSpec::ISpecificationVisitor& sv)
     dummySpecification2Called = true;
 }
 
-void testRegisterAndRun()
+TEST(SpecificationExecutorTest, RegisterAndRun)
 {
     SpecificationVisitorStub sv;
     CxxSpec::SpecificationRegistry registry(sv);
@@ -80,12 +76,12 @@ void testRegisterAndRun()
     SpecificationObserverFake so;
     registry.runAll(so);
 
-    ASSERT_THAT(dummySpecification1Called);
-    ASSERT_THAT(dummySpecification1Visitor == &sv);
-    ASSERT_THAT(dummySpecification2Called);
+    ASSERT_TRUE(dummySpecification1Called);
+    ASSERT_TRUE(dummySpecification1Visitor == &sv);
+    ASSERT_TRUE(dummySpecification2Called);
 }
 
-void testRunEmpty()
+TEST(SpecificationExecutorTest, RunEmpty)
 {
     SpecificationVisitorStub sv;
     CxxSpec::SpecificationRegistry registry(sv);
@@ -103,7 +99,7 @@ void specificationWithError2(CxxSpec::ISpecificationVisitor& sv)
     ASSERT_THAT(3 != 3);
 }
 
-void testRunWithErrors()
+TEST(SpecificationExecutorTest, RunWithErrors)
 {
     SpecificationVisitorStub sv;
     CxxSpec::SpecificationRegistry registry(sv);
@@ -113,23 +109,7 @@ void testRunWithErrors()
     SpecificationObserverFake so;
 
     registry.runAll(so);
-    ASSERT_THAT(so.expressions.size() == 2);
-    ASSERT_THAT(so.expressions[0] == "1 == 2");
-    ASSERT_THAT(so.expressions[1] == "3 != 3");
-}
-
-}
-
-void testSpecificationRegistry()
-{
-    try
-    {
-        testRegisterAndRun();
-        testRunEmpty();
-        testRunWithErrors();
-    }
-    catch (const CxxSpec::AssertionFailed& af)
-    {
-        std::cerr << af.file() << ":" << af.line() << ": Assertion failed: " << af.expression() << std::endl;
-    }
+    ASSERT_TRUE(so.expressions.size() == 2);
+    ASSERT_TRUE(so.expressions[0] == "1 == 2");
+    ASSERT_TRUE(so.expressions[1] == "3 != 3");
 }
