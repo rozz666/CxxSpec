@@ -25,12 +25,13 @@
 */
 
 
-#include "testAssertions.hpp"
 #include <CxxSpec/Assert.hpp>
 #include <cassert>
 #include <sstream>
+#include <gtest/gtest.h>
 
-void testAssertionPass()
+
+TEST(AssertionTest, assertionPass)
 {
     try
     {
@@ -43,7 +44,7 @@ void testAssertionPass()
     }
 }
 
-void testAssertionFail()
+TEST(AssertionTest, assertionFail)
 {
     int line;
     try
@@ -58,10 +59,3 @@ void testAssertionFail()
         assert(af.expression() == "false");
     }
 }
-
-void testAssertions()
-{
-    testAssertionPass();
-    testAssertionFail();
-}
-
