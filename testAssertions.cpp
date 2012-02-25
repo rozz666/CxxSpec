@@ -26,7 +26,6 @@
 
 
 #include <CxxSpec/Assert.hpp>
-#include <cassert>
 #include <sstream>
 #include <gtest/gtest.h>
 
