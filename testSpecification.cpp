@@ -24,14 +24,14 @@
     DEALINGS IN THE SOFTWARE.
 */
 
-#include "testSpecification.hpp"
-#include <cassert>
 #include <CxxSpec/Specification.hpp>
 #include <type_traits>
 #include <string>
 #include <map>
 #include <vector>
 #include <set>
+#include <gtest/gtest.h>
+
 
 
 
@@ -69,10 +69,10 @@ SPECIFICATION("another empty specification") // line 68
 {
 }
 
-void testRegisterSpecification()
+TEST(SpecificationExecutorTest, RegisterSpecification)
 {
-    assert(CxxSpec::registeredSpec["An empty specification"] == &CxxSpec__Specification_at_line_63);
-    assert(CxxSpec::registeredSpec["another empty specification"] == &CxxSpec__Specification_at_line_68);
+    ASSERT_EQ(&CxxSpec__Specification_at_line_63, CxxSpec::registeredSpec["An empty specification"]);
+    ASSERT_EQ(&CxxSpec__Specification_at_line_68, CxxSpec::registeredSpec["another empty specification"]);
 }
 
 SPECIFICATION("one section")
@@ -124,15 +124,15 @@ public:
 
 }
 
-void testOneSection()
+TEST(SpecificationExecutorTest, OneSection)
 {
     SpecificationVisitor sv;
     CxxSpec::registeredSpec["one section"](sv);
-    assert(sv.ops.size() == 4);
-    assert(sv.ops[0] == BEGIN_SPECIFICATION);
-    assert(sv.ops[1] == BEGIN_SECTION);
-    assert(sv.ops[2] == END_SECTION);
-    assert(sv.ops[3] == END_SPECIFICATION);
+    ASSERT_EQ(4u, sv.ops.size());
+    ASSERT_EQ(BEGIN_SPECIFICATION, sv.ops[0]);
+    ASSERT_EQ(BEGIN_SECTION, sv.ops[1]);
+    ASSERT_EQ(END_SECTION, sv.ops[2]);
+    ASSERT_EQ(END_SPECIFICATION, sv.ops[3]);
 }
 
 SPECIFICATION("nested sections")
@@ -145,19 +145,19 @@ SPECIFICATION("nested sections")
     }
 }
 
-void testNestedSections()
+TEST(SpecificationExecutorTest, NestedSections)
 {
     SpecificationVisitor sv;
     CxxSpec::registeredSpec["nested sections"](sv);
-    assert(sv.ops.size() == 6);
-    assert(sv.ops[0] == BEGIN_SPECIFICATION);
-    assert(sv.ops[1] == BEGIN_SECTION);
-    assert(sv.descs[0] == "outer");
-    assert(sv.ops[2] == BEGIN_SECTION);
-    assert(sv.descs[1] == "inner");
-    assert(sv.ops[3] == END_SECTION);
-    assert(sv.ops[4] == END_SECTION);
-    assert(sv.ops[5] == END_SPECIFICATION);
+    ASSERT_EQ(6u, sv.ops.size());
+    ASSERT_EQ(BEGIN_SPECIFICATION, sv.ops[0]);
+    ASSERT_EQ(BEGIN_SECTION, sv.ops[1]);
+    ASSERT_EQ("outer", sv.descs[0]);
+    ASSERT_EQ(BEGIN_SECTION, sv.ops[2]);
+    ASSERT_EQ("inner", sv.descs[1]);
+    ASSERT_EQ(END_SECTION, sv.ops[3]);
+    ASSERT_EQ(END_SECTION, sv.ops[4]);
+    ASSERT_EQ(END_SPECIFICATION, sv.ops[5]);
 }
 
 SPECIFICATION("section sequence")
@@ -167,15 +167,15 @@ SPECIFICATION("section sequence")
     SECTION("3") { }
 }
 
-void testSectionSequence()
+TEST(SpecificationExecutorTest, SectionSequence)
 {
     SpecificationVisitor sv;
     CxxSpec::registeredSpec["section sequence"](sv);
-    assert(sv.ops.size() == 8);
-    assert(sv.ops[1] == BEGIN_SECTION);
-    assert(sv.ops[3] == BEGIN_SECTION);
-    assert(sv.ops[5] == BEGIN_SECTION);
-    assert(sv.ops[6] == END_SECTION);
+    ASSERT_EQ(8u, sv.ops.size());
+    ASSERT_EQ(BEGIN_SECTION, sv.ops[1]);
+    ASSERT_EQ(BEGIN_SECTION, sv.ops[3]);
+    ASSERT_EQ(BEGIN_SECTION, sv.ops[5]);
+    ASSERT_EQ(END_SECTION, sv.ops[6]);
 }
 
 namespace
@@ -195,12 +195,12 @@ SPECIFICATION("execution")
     checkExecute(x);
 }
 
-void testSpecificationExecution()
+TEST(SpecificationExecutorTest, SpecificationExecution)
 {
     SpecificationVisitor sv;
     checkExecuteParam = 0;
     CxxSpec::registeredSpec["execution"](sv);
-    assert(checkExecuteParam == 7);
+    ASSERT_EQ(7, checkExecuteParam);
 }
 
 namespace
@@ -254,48 +254,35 @@ void runSelection(std::set<std::string> selection)
     CxxSpec::registeredSpec["selection"](sv);
 }
 
-void testSectionSelectionFirst()
+TEST(SpecificationExecutorTest, SectionSelectionFirst)
 {
     std::set<std::string> selection;
     selection.insert("first");
     runSelection(selection);
-    assert(selectionIndex == 1);
+    ASSERT_EQ(1, selectionIndex);
 }
 
-void testSectionSelectionSecond()
+TEST(SpecificationExecutorTest, SectionSelectionSecond)
 {
     std::set<std::string> selection;
     selection.insert("first");
     selection.insert("second");
     runSelection(selection);
-    assert(selectionIndex == 2);
+    ASSERT_EQ(2, selectionIndex);
 }
 
-void testSectionSelectionThird()
+TEST(SpecificationExecutorTest, SectionSelectionThird)
 {
     std::set<std::string> selection;
     selection.insert("third");
     runSelection(selection);
-    assert(selectionIndex == 3);
+    ASSERT_EQ(3, selectionIndex);
 }
 
-void testSectionSelectionNone()
+TEST(SpecificationExecutorTest, SectionSelectionNone)
 {
     std::set<std::string> selection;
     selection.insert("second");
     runSelection(selection);
-    assert(selectionIndex == 0);
-}
-
-void testSpecification()
-{
-    testRegisterSpecification();
-    testOneSection();
-    testNestedSections();
-    testSectionSequence();
-    testSpecificationExecution();
-    testSectionSelectionFirst();
-    testSectionSelectionSecond();
-    testSectionSelectionThird();
-    testSectionSelectionNone();
+    ASSERT_EQ(0, selectionIndex);
 }
