@@ -32,18 +32,27 @@
 #define ASSERT_THAT(expr) \
     do { if (!(expr)) throw CxxSpec::AssertionFailed(__FILE__, __LINE__, #expr); } while (0)
 
-struct Expectation {
+class Expectation {
+public:
     Expectation& should;
+
+    Expectation(bool expr, std::string file, int line, std::string exprText)
+        : should(*this), expr(expr), file(file), line(line), exprText(exprText) { }
+
+    void beTrue()
+    {
+        if (!expr)
+            throwAssertionFailed("expected to be true but is false");
+    }
+private:
     bool expr;
     std::string file;
     int line;
     std::string exprText;
-    Expectation(bool expr, std::string file, int line, std::string exprText)
-        : should(*this), expr(expr), file(file), line(line), exprText(exprText) { }
-    void beTrue()
+
+    void throwAssertionFailed(const std::string& expectation)
     {
-        if (!expr)
-            throw CxxSpec::AssertionFailed(file, line, exprText, "expected to be true but is false");
+        throw CxxSpec::AssertionFailed(file, line, exprText, expectation);
     }
 };
         
