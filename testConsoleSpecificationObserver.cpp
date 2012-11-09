@@ -30,10 +30,10 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
-TEST(ConsoleSpecificationObserver, handleFailedTest)
+TEST(ConsoleSpecificationObserver, shouldReportFailedTestInfo)
 {
     std::ostringstream os;
     CxxSpec::ConsoleSpecificationObserver cso(os);
-    cso.testFailed(CxxSpec::AssertionFailed("file", 99, "expression"));
-    ASSERT_THAT(os.str() == "Assertion failed: expression\nAt file:99\n");
+    cso.testFailed(CxxSpec::AssertionFailed("{file}", 99, "{message}"));
+    EXPECT_EQ("{message}\nAt {file}:99\n", os.str());
 }
