@@ -69,7 +69,7 @@ CXXSPEC_DESCRIBE("another empty specification") // line 68
 {
 }
 
-TEST(SpecificationExecutorTest, RegisterSpecification)
+TEST(SpecificationTest, RegisterSpecification)
 {
     ASSERT_EQ(&CxxSpec__Specification_at_line_63, CxxSpec::registeredSpec["An empty specification"]);
     ASSERT_EQ(&CxxSpec__Specification_at_line_68, CxxSpec::registeredSpec["another empty specification"]);
@@ -82,7 +82,7 @@ CXXSPEC_DESCRIBE("one section")
     }
 }
 
-TEST(SpecificationExecutorTest, OneSection)
+TEST(SpecificationTest, OneSection)
 {
     StrictMock<SpecificationVisitorMock> sv;
     {
@@ -106,7 +106,7 @@ CXXSPEC_DESCRIBE("nested sections")
     }
 }
 
-TEST(SpecificationExecutorTest, NestedSections)
+TEST(SpecificationTest, NestedSections)
 {
     StrictMock<SpecificationVisitorMock> sv;
     {
@@ -130,7 +130,7 @@ CXXSPEC_DESCRIBE("section sequence")
     CXXSPEC_CONTEXT("3") { }
 }
 
-TEST(SpecificationExecutorTest, SectionSequence)
+TEST(SpecificationTest, SectionSequence)
 {
     NiceMock<SpecificationVisitorMock> sv;
     {
@@ -159,7 +159,7 @@ CXXSPEC_DESCRIBE("nested with exception")
     }
 }
 
-TEST(SpecificationExecutorTest, nextedWithException)
+TEST(SpecificationTest, nextedWithException)
 {
     StrictMock<SpecificationVisitorMock> sv;
     {
@@ -182,7 +182,7 @@ CXXSPEC_DESCRIBE("sequence with exception")
     CXXSPEC_CONTEXT("3") { }
 }
 
-TEST(SpecificationExecutorTest, sequnceWithException)
+TEST(SpecificationTest, sequnceWithException)
 {
     NiceMock<SpecificationVisitorMock> sv;
     {
@@ -214,7 +214,7 @@ CXXSPEC_DESCRIBE("execution")
     checkExecute(x);
 }
 
-TEST(SpecificationExecutorTest, SpecificationExecution)
+TEST(SpecificationTest, SpecificationExecution)
 {
     NiceMock<SpecificationVisitorMock> sv;
     checkExecuteParam = 0;
@@ -273,25 +273,25 @@ void havingRunSelection(std::set<std::string> selection)
     CxxSpec::registeredSpec["selection"](sv);
 }
 
-TEST(SpecificationExecutorTest, shouldExecuteFirst)
+TEST(SpecificationTest, shouldExecuteFirst)
 {
     havingRunSelection({ "first" });
     ASSERT_EQ(1, selectionIndex);
 }
 
-TEST(SpecificationExecutorTest, shouldExecuteFirstWithSecond)
+TEST(SpecificationTest, shouldExecuteFirstWithSecond)
 {
     havingRunSelection({ "first", "second" });
     ASSERT_EQ(2, selectionIndex);
 }
 
-TEST(SpecificationExecutorTest, shouldExecuteThird)
+TEST(SpecificationTest, shouldExecuteThird)
 {
     havingRunSelection({ "third" });
     ASSERT_EQ(3, selectionIndex);
 }
 
-TEST(SpecificationExecutorTest, shouldNotExecuteSecond)
+TEST(SpecificationTest, shouldNotExecuteSecond)
 {
     havingRunSelection({ "second" });
     ASSERT_EQ(0, selectionIndex);

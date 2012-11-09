@@ -62,7 +62,7 @@ void dummySpecification2(CxxSpec::ISpecificationVisitor& sv)
     dummySpecification2Called = true;
 }
 
-TEST(SpecificationExecutorTest, RegisterAndRun)
+TEST(SpecificationRegistryTest, RegisterAndRun)
 {
     SpecificationVisitorStub sv;
     CxxSpec::SpecificationRegistry registry(sv);
@@ -81,7 +81,7 @@ TEST(SpecificationExecutorTest, RegisterAndRun)
     ASSERT_TRUE(dummySpecification2Called);
 }
 
-TEST(SpecificationExecutorTest, RunEmpty)
+TEST(SpecificationRegistryTest, RunEmpty)
 {
     SpecificationVisitorStub sv;
     CxxSpec::SpecificationRegistry registry(sv);
@@ -99,7 +99,7 @@ void specificationWithError2(CxxSpec::ISpecificationVisitor& sv)
     CXXSPEC_EXPECT(3 != 3).should.beTrue();
 }
 
-TEST(SpecificationExecutorTest, RunWithErrors)
+TEST(SpecificationRegistryTest, RunWithErrors)
 {
     SpecificationVisitorStub sv;
     CxxSpec::SpecificationRegistry registry(sv);
