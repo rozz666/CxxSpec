@@ -54,3 +54,28 @@ TEST(AssertionTest, assertionFail)
         ASSERT_EQ("false", af.expression());
     }
 }
+
+TEST(AssertionTest, beTrueShouldNotThrowWhenExpressionIsTrue)
+{
+    ASSERT_NO_THROW(
+    {
+        CXXSPEC_EXPECT(true).should.beTrue();
+    });
+}
+
+TEST(AssertionTest, beTrueShouldThrowWhenExpressionIsFalse)
+{
+    int line;
+    try
+    {
+        line = __LINE__; CXXSPEC_EXPECT(false).should.beTrue();
+        FAIL() << "must throw";
+    }
+    catch (const CxxSpec::AssertionFailed& af)
+    {
+        EXPECT_EQ(__FILE__, af.file());
+        EXPECT_EQ(line, af.line());
+        EXPECT_EQ("false", af.expression());
+        EXPECT_EQ("be true", af.expectation());
+    }
+}

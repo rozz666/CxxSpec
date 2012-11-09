@@ -32,4 +32,17 @@
 #define ASSERT_THAT(expr) \
     do { if (!(expr)) throw CxxSpec::AssertionFailed(__FILE__, __LINE__, #expr); } while (0)
 
+struct Expectation {
+    Expectation& should;
+    bool expr;
+    std::string file;
+    int line;
+    std::string exprText;
+    Expectation(bool expr, std::string file, int line, std::string exprText)
+        : should(*this), expr(expr), file(file), line(line), exprText(exprText) { }
+    void beTrue() { if (!expr) throw CxxSpec::AssertionFailed(file, line, exprText, "be true"); }
+};
+        
+#define CXXSPEC_EXPECT(expr) Expectation(expr, __FILE__, __LINE__, #expr)
+        
 #endif // CXXSPEC_ASSERT_HPP

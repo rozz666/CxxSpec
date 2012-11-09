@@ -34,17 +34,19 @@ namespace CxxSpec {
 class AssertionFailed
 {
 public:
-    AssertionFailed(const std::string& file, int line, const std::string& expression)
-        : file_(file), line_(line), expression_(expression) { }
+    AssertionFailed(const std::string& file, int line, const std::string& expression, const std::string& expectation = "")
+        : file_(file), line_(line), expression_(expression), expectation_(expectation) { }
 
     std::string file() const { return file_; }
     int line() const { return line_; }
     std::string expression() const { return expression_; }
+    std::string expectation() const { return expectation_; }
 
 private:
     std::string file_;
     int line_;
     std::string expression_;
+    std::string expectation_;
 };
 
 
