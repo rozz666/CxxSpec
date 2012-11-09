@@ -221,4 +221,18 @@ TEST_F(SpecificationExecutorTest, shouldFinishDescriptionWithNoSectionsAndPropag
     ASSERT_TRUE(executor.done());
 }
 
+CXXSPEC_DESCRIBE("one section with exceptions")
+{
+    CXXSPEC_CONTEXT("")
+    {
+        throw std::runtime_error("");
+    }
+}
+
+TEST_F(SpecificationExecutorTest, shouldFinishDescriptionWithOneSectionsAndPropagateTheException)
+{
+    ASSERT_ANY_THROW(havingExecuted("one section with exceptions"));
+    ASSERT_TRUE(executor.done());
+}
+
 }
