@@ -29,6 +29,7 @@
 #include <CxxSpec/SpecificationExecutor.hpp>
 #include <map>
 #include <vector>
+#include <stdexcept>
 #include <gmock/gmock.h>
 
 using namespace testing;
@@ -207,6 +208,17 @@ TEST_F(SpecificationExecutorTest, shouldExecuteSectionsDepthFirst)
     havingExecuted("parallel and nested");
     ASSERT_TRUE(executor.done());
     ASSERT_THAT(steps, ElementsAre(3));
+}
+
+CXXSPEC_DESCRIBE("no section with exception")
+{
+    throw std::runtime_error("error");
+}
+
+TEST_F(SpecificationExecutorTest, shouldFinishDescriptionWithNoSectionsAndPropagateTheException)
+{
+    ASSERT_ANY_THROW(havingExecuted("no section with exception"));
+    ASSERT_TRUE(executor.done());
 }
 
 }
