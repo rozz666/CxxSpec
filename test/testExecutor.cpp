@@ -90,7 +90,7 @@ CXXSPEC_DESCRIBE("one section")
     }
 }
 
-TEST_F(SpecificationExecutorTest, shouldExecuteDescriptionWithASections)
+TEST_F(SpecificationExecutorTest, shouldExecuteDescriptionWithOneSection)
 {
     havingExecuted("one section");
     ASSERT_TRUE(executor.done());
