@@ -29,32 +29,6 @@
 #include <sstream>
 #include <gtest/gtest.h>
 
-
-TEST(AssertionTest, assertionPass)
-{
-    ASSERT_NO_THROW(
-    {
-        ASSERT_THAT(true);
-        ASSERT_THAT(1 * 0 == 0);
-    });
-}
-
-TEST(AssertionTest, assertionFail)
-{
-    int line;
-    try
-    {
-        line = __LINE__; ASSERT_THAT(false);
-        FAIL() << "must throw";
-    }
-    catch (const CxxSpec::AssertionFailed& af)
-    {
-        ASSERT_EQ(__FILE__, af.file());
-        ASSERT_EQ(line, af.line());
-        ASSERT_EQ("false", af.expression());
-    }
-}
-
 TEST(AssertionTest, beTrueShouldNotThrowWhenExpressionIsTrue)
 {
     ASSERT_NO_THROW(

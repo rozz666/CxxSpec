@@ -91,12 +91,12 @@ TEST(SpecificationExecutorTest, RunEmpty)
 
 void specificationWithError1(CxxSpec::ISpecificationVisitor& sv)
 {
-    ASSERT_THAT(1 == 2);
+    CXXSPEC_EXPECT(1 == 2).should.beTrue();
 }
 
 void specificationWithError2(CxxSpec::ISpecificationVisitor& sv)
 {
-    ASSERT_THAT(3 != 3);
+    CXXSPEC_EXPECT(3 != 3).should.beTrue();
 }
 
 TEST(SpecificationExecutorTest, RunWithErrors)

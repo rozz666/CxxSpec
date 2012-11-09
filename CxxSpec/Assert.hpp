@@ -29,9 +29,6 @@
 #define CXXSPEC_ASSERT_HPP
 #include <CxxSpec/AssertionFailed.hpp>
 
-#define ASSERT_THAT(expr) \
-    do { if (!(expr)) throw CxxSpec::AssertionFailed(__FILE__, __LINE__, #expr); } while (0)
-
 class Expectation {
 public:
     Expectation& should;
