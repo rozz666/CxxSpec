@@ -221,17 +221,23 @@ TEST_F(SpecificationExecutorTest, shouldFinishDescriptionWithNoSectionsAndPropag
     ASSERT_TRUE(executor.done());
 }
 
-CXXSPEC_DESCRIBE("one section with exceptions")
+CXXSPEC_DESCRIBE("nested sections with exception")
 {
     CXXSPEC_CONTEXT("")
     {
-        throw std::runtime_error("");
+        CXXSPEC_CONTEXT("")
+        {
+            CXXSPEC_CONTEXT("")
+            {
+                throw std::runtime_error("");
+            }
+        }
     }
 }
 
-TEST_F(SpecificationExecutorTest, shouldFinishDescriptionWithOneSectionsAndPropagateTheException)
+TEST_F(SpecificationExecutorTest, shouldFinishDescriptionWithNestedSectionsAndPropagateTheException)
 {
-    ASSERT_ANY_THROW(havingExecuted("one section with exceptions"));
+    ASSERT_ANY_THROW(havingExecuted("nested sections with exception"));
     ASSERT_TRUE(executor.done());
 }
 
