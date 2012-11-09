@@ -29,12 +29,14 @@
 #define CXXSPEC_ASSERT_HPP
 #include <CxxSpec/AssertionFailed.hpp>
 
-class Expectation {
-public:
-    Expectation& should;
+namespace CxxSpec
+{
 
-    Expectation(bool expr, std::string file, int line, std::string exprText)
-        : should(*this), expr(expr), file(file), line(line), exprText(exprText) { }
+class Should
+{
+public:
+    Should(bool expr, std::string file, int line, std::string exprText)
+        : expr(expr), file(file), line(line), exprText(exprText) { }
 
     void beTrue()
     {
@@ -49,10 +51,21 @@ private:
 
     void throwAssertionFailed(const std::string& expectation)
     {
-        throw CxxSpec::AssertionFailed(file, line, exprText, expectation);
+        throw AssertionFailed(file, line, exprText, expectation);
     }
 };
+
+class Expectation
+{
+public:
+    Should should;
+
+    Expectation(bool expr, std::string file, int line, std::string exprText)
+        : should(expr, file, line, exprText) { }
+};
         
-#define CXXSPEC_EXPECT(expr) Expectation(expr, __FILE__, __LINE__, #expr)
-        
+#define CXXSPEC_EXPECT(expr) CxxSpec::Expectation(expr, __FILE__, __LINE__, #expr)
+
+}
+
 #endif // CXXSPEC_ASSERT_HPP

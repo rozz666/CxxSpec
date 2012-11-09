@@ -53,3 +53,8 @@ TEST(AssertionTest, beTrueShouldThrowWhenExpressionIsFalse)
         EXPECT_EQ("expected to be true but is false", af.expectation());
     }
 }
+
+TEST(AssertionTest, shouldShouldBeOfDifferentTypeThanExpectation)
+{
+    ASSERT_TRUE(typeid(CXXSPEC_EXPECT(0)) != typeid(CXXSPEC_EXPECT(0).should));
+}
