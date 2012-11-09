@@ -68,14 +68,14 @@ TEST(AssertionTest, beTrueShouldThrowWhenExpressionIsFalse)
     int line;
     try
     {
-        line = __LINE__; CXXSPEC_EXPECT(false).should.beTrue();
+        line = __LINE__; CXXSPEC_EXPECT(3 == 5).should.beTrue();
         FAIL() << "must throw";
     }
     catch (const CxxSpec::AssertionFailed& af)
     {
         EXPECT_EQ(__FILE__, af.file());
         EXPECT_EQ(line, af.line());
-        EXPECT_EQ("false", af.expression());
-        EXPECT_EQ("be true", af.expectation());
+        EXPECT_EQ("3 == 5", af.expression());
+        EXPECT_EQ("expected to be true but is false", af.expectation());
     }
 }

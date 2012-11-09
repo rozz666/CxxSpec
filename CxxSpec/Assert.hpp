@@ -40,7 +40,11 @@ struct Expectation {
     std::string exprText;
     Expectation(bool expr, std::string file, int line, std::string exprText)
         : should(*this), expr(expr), file(file), line(line), exprText(exprText) { }
-    void beTrue() { if (!expr) throw CxxSpec::AssertionFailed(file, line, exprText, "be true"); }
+    void beTrue()
+    {
+        if (!expr)
+            throw CxxSpec::AssertionFailed(file, line, exprText, "expected to be true but is false");
+    }
 };
         
 #define CXXSPEC_EXPECT(expr) Expectation(expr, __FILE__, __LINE__, #expr)
