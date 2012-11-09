@@ -266,42 +266,33 @@ CXXSPEC_DESCRIBE("selection")
     }
 }
 
-void runSelection(std::set<std::string> selection)
+void havingRunSelection(std::set<std::string> selection)
 {
     selectionIndex = 0;
     SelectionVisitor sv(selection);
     CxxSpec::registeredSpec["selection"](sv);
 }
 
-TEST(SpecificationExecutorTest, SectionSelectionFirst)
+TEST(SpecificationExecutorTest, shouldExecuteFirst)
 {
-    std::set<std::string> selection;
-    selection.insert("first");
-    runSelection(selection);
+    havingRunSelection({ "first" });
     ASSERT_EQ(1, selectionIndex);
 }
 
-TEST(SpecificationExecutorTest, SectionSelectionSecond)
+TEST(SpecificationExecutorTest, shouldExecuteFirstWithSecond)
 {
-    std::set<std::string> selection;
-    selection.insert("first");
-    selection.insert("second");
-    runSelection(selection);
+    havingRunSelection({ "first", "second" });
     ASSERT_EQ(2, selectionIndex);
 }
 
-TEST(SpecificationExecutorTest, SectionSelectionThird)
+TEST(SpecificationExecutorTest, shouldExecuteThird)
 {
-    std::set<std::string> selection;
-    selection.insert("third");
-    runSelection(selection);
+    havingRunSelection({ "third" });
     ASSERT_EQ(3, selectionIndex);
 }
 
-TEST(SpecificationExecutorTest, SectionSelectionNone)
+TEST(SpecificationExecutorTest, shouldNotExecuteSecond)
 {
-    std::set<std::string> selection;
-    selection.insert("second");
-    runSelection(selection);
+    havingRunSelection({ "second" });
     ASSERT_EQ(0, selectionIndex);
 }
