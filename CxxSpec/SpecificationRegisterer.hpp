@@ -31,7 +31,7 @@
 
 namespace CxxSpec {
 
-void registerSpecification(const std::string& desc, SpecificationFunction func)
+inline void registerSpecification(const std::string& desc, SpecificationFunction func)
 {
     SpecificationRegistry::getInstance().registerSpecification(desc, func);
 }
