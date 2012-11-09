@@ -31,11 +31,11 @@
 #include <vector>
 #include <set>
 #include <SpecificationVisitorMock.hpp>
+#include <stdexcept>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 using namespace testing;
-
 
 
 namespace CxxSpec
@@ -135,7 +135,7 @@ TEST(SpecificationExecutorTest, SectionSequence)
     NiceMock<SpecificationVisitorMock> sv;
     {
         InSequence seq;
-         EXPECT_CALL(sv, beginSection("1"))
+        EXPECT_CALL(sv, beginSection("1"))
              .WillOnce(Return(true));
         EXPECT_CALL(sv, endSection());
         EXPECT_CALL(sv, beginSection("2"))
@@ -146,6 +146,55 @@ TEST(SpecificationExecutorTest, SectionSequence)
         EXPECT_CALL(sv, endSection());
     }
     CxxSpec::registeredSpec["section sequence"](sv);
+}
+
+SPECIFICATION("nested with exception")
+{
+    SECTION("1")
+    {
+        SECTION("2")
+        {
+            throw std::runtime_error("error");
+        }
+    }
+}
+
+TEST(SpecificationExecutorTest, nextedWithException)
+{
+    StrictMock<SpecificationVisitorMock> sv;
+    {
+        InSequence seq;
+        EXPECT_CALL(sv, beginSpecification());
+        EXPECT_CALL(sv, beginSection(_)).Times(2).WillRepeatedly(Return(true));
+        EXPECT_CALL(sv, endSection()).Times(2);
+        EXPECT_CALL(sv, endSpecification());
+    }
+    ASSERT_THROW(CxxSpec::registeredSpec["nested with exception"](sv), std::runtime_error);
+}
+
+SPECIFICATION("sequence with exception")
+{
+    SECTION("1") { }
+    SECTION("2")
+    {
+        throw std::runtime_error("error");
+    }
+    SECTION("3") { }
+}
+
+TEST(SpecificationExecutorTest, sequnceWithException)
+{
+    NiceMock<SpecificationVisitorMock> sv;
+    {
+        InSequence seq;
+        EXPECT_CALL(sv, beginSection("1"))
+             .WillOnce(Return(true));
+        EXPECT_CALL(sv, endSection());
+        EXPECT_CALL(sv, beginSection("2"))
+            .WillOnce(Return(true));
+        EXPECT_CALL(sv, endSection());
+    }
+    ASSERT_THROW(CxxSpec::registeredSpec["sequence with exception"](sv), std::runtime_error);
 }
 
 namespace
