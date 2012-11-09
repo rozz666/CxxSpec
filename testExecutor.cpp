@@ -53,7 +53,7 @@ static void step(int n)
     steps.push_back(n);
 }
 
-SPECIFICATION("no sections")
+CXXSPEC_DESCRIBE("no sections")
 {
     step(1);
 }
@@ -68,10 +68,10 @@ TEST(SpecificationExecutorTest, executeNoSections)
     ASSERT_EQ(1, steps[0]);
 }
 
-SPECIFICATION("one section")
+CXXSPEC_DESCRIBE("one section")
 {
     step(1);
-    SECTION("")
+    CXXSPEC_CONTEXT("")
     {
         step(2);
     }
@@ -88,18 +88,18 @@ TEST(SpecificationExecutorTest, executeOneSection)
     ASSERT_EQ(2, steps[1]);
 }
 
-SPECIFICATION("parallel")
+CXXSPEC_DESCRIBE("parallel")
 {
     step(1);
-    SECTION("")
+    CXXSPEC_CONTEXT("")
     {
         step(11);
     }
-    SECTION("")
+    CXXSPEC_CONTEXT("")
     {
         step(12);
     }
-    SECTION("")
+    CXXSPEC_CONTEXT("")
     {
         step(13);
     }
@@ -135,16 +135,16 @@ TEST(SpecificationExecutorTest, executeParallel)
     ASSERT_EQ(2, steps[2]);
 }
 
-SPECIFICATION("nested")
+CXXSPEC_DESCRIBE("nested")
 {
     step(1);
-    SECTION("")
+    CXXSPEC_CONTEXT("")
     {
         step(11);
-        SECTION("")
+        CXXSPEC_CONTEXT("")
         {
             step(111);
-            SECTION("")
+            CXXSPEC_CONTEXT("")
             {
                 step(1111);
             }
@@ -166,33 +166,33 @@ TEST(SpecificationExecutorTest, executeNested)
     ASSERT_EQ(1111, steps[3]);
 }
 
-SPECIFICATION("parallel and nested")
+CXXSPEC_DESCRIBE("parallel and nested")
 {
-    SECTION("")
+    CXXSPEC_CONTEXT("")
     {
         step(1);
     }
-    SECTION("")
+    CXXSPEC_CONTEXT("")
     {
         step(2);
-        SECTION("")
+        CXXSPEC_CONTEXT("")
         {
             step(21);
-            SECTION("")
+            CXXSPEC_CONTEXT("")
             {
                 step(211);
             }
         }
-        SECTION("")
+        CXXSPEC_CONTEXT("")
         {
             step(22);
         }
-        SECTION("")
+        CXXSPEC_CONTEXT("")
         {
             step(23);
         }
     }
-    SECTION("")
+    CXXSPEC_CONTEXT("")
     {
         step(3);
     }

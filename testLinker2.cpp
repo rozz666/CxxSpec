@@ -36,7 +36,7 @@ void registerSpecification(const std::string& desc, SpecificationFunction func) 
 }
 
 static_assert(__LINE__ == 38, "must be same line as in testLinker1");
-SPECIFICATION("test linker 1") // line 39
+CXXSPEC_DESCRIBE("test linker 1") // line 39
 {
 }
 

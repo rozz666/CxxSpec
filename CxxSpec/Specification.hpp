@@ -31,7 +31,7 @@
 
 #define CXXSPEC_CAT2(a, b) a##b
 #define CXXSPEC_CAT(a, b) CXXSPEC_CAT2(a, b)
-#define SPECIFICATION(desc) \
+#define CXXSPEC_DESCRIBE(desc) \
     static void CXXSPEC_CAT(CxxSpec__Specification_impl_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor); \
     static void CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor) \
     { \
@@ -42,7 +42,7 @@
         = (::CxxSpec::registerSpecification(desc, &CXXSPEC_CAT(CxxSpec__Specification_at_line_, __LINE__)), 0); \
     static void CXXSPEC_CAT(CxxSpec__Specification_impl_at_line_, __LINE__)(::CxxSpec::ISpecificationVisitor& CxxSpec_specificationVisitor)
 
-#define SECTION(desc) \
+#define CXXSPEC_CONTEXT(desc) \
     if (auto CxxSpec_sectionGuard = ::CxxSpec::SectionGuard(CxxSpec_specificationVisitor, desc))
 
 namespace CxxSpec {

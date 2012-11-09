@@ -60,12 +60,12 @@ void registerSpecification(const std::string& desc, SpecificationFunction func)
 
 
 static_assert(__LINE__ == 62, "must be line 62");
-SPECIFICATION("An empty specification") // line 63
+CXXSPEC_DESCRIBE("An empty specification") // line 63
 {
 }
 
 static_assert(__LINE__ == 67, "must be line 67");
-SPECIFICATION("another empty specification") // line 68
+CXXSPEC_DESCRIBE("another empty specification") // line 68
 {
 }
 
@@ -75,9 +75,9 @@ TEST(SpecificationExecutorTest, RegisterSpecification)
     ASSERT_EQ(&CxxSpec__Specification_at_line_68, CxxSpec::registeredSpec["another empty specification"]);
 }
 
-SPECIFICATION("one section")
+CXXSPEC_DESCRIBE("one section")
 {
-    SECTION("one")
+    CXXSPEC_CONTEXT("one")
     {
     }
 }
@@ -96,11 +96,11 @@ TEST(SpecificationExecutorTest, OneSection)
     CxxSpec::registeredSpec["one section"](sv);
 }
 
-SPECIFICATION("nested sections")
+CXXSPEC_DESCRIBE("nested sections")
 {
-    SECTION("outer")
+    CXXSPEC_CONTEXT("outer")
     {
-        SECTION("inner")
+        CXXSPEC_CONTEXT("inner")
         {
         }
     }
@@ -123,11 +123,11 @@ TEST(SpecificationExecutorTest, NestedSections)
     CxxSpec::registeredSpec["nested sections"](sv);
 }
 
-SPECIFICATION("section sequence")
+CXXSPEC_DESCRIBE("section sequence")
 {
-    SECTION("1") { }
-    SECTION("2") { }
-    SECTION("3") { }
+    CXXSPEC_CONTEXT("1") { }
+    CXXSPEC_CONTEXT("2") { }
+    CXXSPEC_CONTEXT("3") { }
 }
 
 TEST(SpecificationExecutorTest, SectionSequence)
@@ -148,11 +148,11 @@ TEST(SpecificationExecutorTest, SectionSequence)
     CxxSpec::registeredSpec["section sequence"](sv);
 }
 
-SPECIFICATION("nested with exception")
+CXXSPEC_DESCRIBE("nested with exception")
 {
-    SECTION("1")
+    CXXSPEC_CONTEXT("1")
     {
-        SECTION("2")
+        CXXSPEC_CONTEXT("2")
         {
             throw std::runtime_error("error");
         }
@@ -172,14 +172,14 @@ TEST(SpecificationExecutorTest, nextedWithException)
     ASSERT_THROW(CxxSpec::registeredSpec["nested with exception"](sv), std::runtime_error);
 }
 
-SPECIFICATION("sequence with exception")
+CXXSPEC_DESCRIBE("sequence with exception")
 {
-    SECTION("1") { }
-    SECTION("2")
+    CXXSPEC_CONTEXT("1") { }
+    CXXSPEC_CONTEXT("2")
     {
         throw std::runtime_error("error");
     }
-    SECTION("3") { }
+    CXXSPEC_CONTEXT("3") { }
 }
 
 TEST(SpecificationExecutorTest, sequnceWithException)
@@ -208,7 +208,7 @@ void checkExecute(int param)
 
 }
 
-SPECIFICATION("execution")
+CXXSPEC_DESCRIBE("execution")
 {
     auto x = 7;
     checkExecute(x);
@@ -250,17 +250,17 @@ private:
 
 }
 
-SPECIFICATION("selection")
+CXXSPEC_DESCRIBE("selection")
 {
-    SECTION("first")
+    CXXSPEC_CONTEXT("first")
     {
         selectionIndex = 1;
-        SECTION("second")
+        CXXSPEC_CONTEXT("second")
         {
             selectionIndex = 2;
         }
     }
-    SECTION("third")
+    CXXSPEC_CONTEXT("third")
     {
         selectionIndex = 3;
     }
