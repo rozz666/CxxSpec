@@ -54,17 +54,18 @@ public:
 
     void registerSpecification(const std::string& desc, SpecificationFunction f)
     {
-        specs.push_back(f);
+        specs.push_back({ desc, f });
     }
     void runAll(ISpecificationObserver& so)
     {
         for (auto spec : specs)
         {
+            so.testingSpecification(spec.first);
             std::shared_ptr<ISpecificationVisitor> specificationVisitor = specificationVisitorFactory();
             do {
                 try
                 {
-                    (*spec)(*specificationVisitor);
+                    spec.second(*specificationVisitor);
                 }
                 catch (const AssertionFailed& af)
                 {
@@ -77,7 +78,7 @@ public:
     }
 private:
     ISpecificationVisitorFactory specificationVisitorFactory;
-    std::vector<SpecificationFunction> specs;
+    std::vector<std::pair<std::string, SpecificationFunction>> specs;
 };
 
 

@@ -38,7 +38,7 @@ struct SpecificationRegistryTest : testing::Test
     std::shared_ptr<SpecificationVisitorMock> visitor1;
     std::shared_ptr<SpecificationVisitorMock> visitor2;
     CxxSpec::SpecificationRegistry registry;
-    StrictMock<SpecificationObserverMock> observer;
+    NiceMock<SpecificationObserverMock> observer;
 
     MOCK_METHOD0(visitorFactory, std::shared_ptr<CxxSpec::ISpecificationVisitor>());
 
@@ -140,6 +140,21 @@ TEST_F(SpecificationRegistryTest, shouldVisitSpecificationUntilDoneAndCatchAsser
         EXPECT_CALL(observer, testFailed(_));
         EXPECT_CALL(*visitor1, done()).WillOnce(Return(true));
     }
+
+    registry.runAll(observer);
+}
+
+TEST_F(SpecificationRegistryTest, shouldNotifyObserverAboutSpecificationName)
+{
+    registry.registerSpecification("spec1", &dummySpecification1);
+
+    EXPECT_CALL(*this, visitorFactory())
+        .WillOnce(Return(visitor1));
+    EXPECT_CALL(*visitor1, done())
+        .WillOnce(Return(false))
+        .WillOnce(Return(true));
+
+    EXPECT_CALL(observer, testingSpecification("spec1"));
 
     registry.runAll(observer);
 }
