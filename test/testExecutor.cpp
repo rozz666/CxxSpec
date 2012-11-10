@@ -285,7 +285,7 @@ TEST_F(SpecificationExecutorTest, shouldExecuteSectionsInOrderAndPropagateExcept
     ASSERT_TRUE(executor.done());
 }
 
-CXXSPEC_DESCRIBE("excepion after sections")
+CXXSPEC_DESCRIBE("exception after sections")
 {
     CXXSPEC_CONTEXT("")
     {
@@ -300,17 +300,17 @@ CXXSPEC_DESCRIBE("excepion after sections")
 
 TEST_F(SpecificationExecutorTest, shouldExecuteAllSectionsWhenExceptionIsThrownAfterThem)
 {
-    ASSERT_ANY_THROW(havingExecuted("excepion after sections"));
+    ASSERT_ANY_THROW(havingExecuted("exception after sections"));
     executor.caughtException();
     ASSERT_FALSE(executor.done());
     ASSERT_THAT(steps, ElementsAre(1));
 
-    ASSERT_ANY_THROW(havingExecuted("excepion after sections"));
+    ASSERT_ANY_THROW(havingExecuted("exception after sections"));
     executor.caughtException();
     ASSERT_FALSE(executor.done());
     ASSERT_THAT(steps, ElementsAre(2));
 
-    ASSERT_ANY_THROW(havingExecuted("excepion after sections"));
+    ASSERT_ANY_THROW(havingExecuted("exception after sections"));
     ASSERT_TRUE(executor.done());
 }
 
