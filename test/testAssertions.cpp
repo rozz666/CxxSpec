@@ -82,3 +82,20 @@ TEST(AssertionTest, operatorEqShouldNotThrowWhenExpressionsAreEqual)
 {
     CXXSPEC_EXPECT(OperatorEqOnly(7)).should == OperatorEqOnly(7);
 }
+
+TEST(AssertionTest, operatorEqShouldThrowWhenExpressionsAreNotEqual)
+{
+    int line;
+    try
+    {
+        line = __LINE__; CXXSPEC_EXPECT(OperatorEqOnly(7)).should == OperatorEqOnly(8);
+        FAIL() << "must throw";
+    }
+    catch (const CxxSpec::AssertionFailed& af)
+    {
+        EXPECT_EQ(__FILE__, af.file());
+        EXPECT_EQ(line, af.line());
+        EXPECT_EQ("OperatorEqOnly(7)", af.expression());
+        EXPECT_EQ("failed equality check", af.expectation());
+    }
+}

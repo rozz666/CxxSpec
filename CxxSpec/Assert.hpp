@@ -47,6 +47,8 @@ public:
 
     void operator==(Expression expected)
     {
+        if (!(expr == expected))
+            throwAssertionFailed("failed equality check");
     }
 
 private:
