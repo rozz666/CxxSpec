@@ -30,10 +30,21 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
-TEST(ConsoleSpecificationObserver, shouldReportFailedTestInfo)
+struct ConsoleSpecificationObserver : testing::Test
 {
-    std::ostringstream os;
-    CxxSpec::ConsoleSpecificationObserver cso(os);
-    cso.testFailed(CxxSpec::AssertionFailed("{file}", 99, "{message}"));
-    EXPECT_EQ("{message}\nAt {file}:99\n", os.str());
+    std::ostringstream stream;
+    CxxSpec::ConsoleSpecificationObserver observer;
+    ConsoleSpecificationObserver() : observer(stream) { }
+};
+
+TEST_F(ConsoleSpecificationObserver, shouldReportFailedTestInfo)
+{
+    observer.testFailed(CxxSpec::AssertionFailed("{file}", 99, "{message}"));
+    EXPECT_EQ("{message}\nAt {file}:99\n", stream.str());
+}
+
+TEST_F(ConsoleSpecificationObserver, shouldReportSpecificationName)
+{
+    observer.testingSpecification("{spec}");
+    EXPECT_EQ("{spec}\n", stream.str());
 }

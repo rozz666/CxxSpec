@@ -41,7 +41,10 @@ public:
         os << af.expression() << std::endl;
         os << "At " << af.file() << ":" << af.line() << std::endl;
     }
-    virtual void testingSpecification(const std::string& spec) { }
+    virtual void testingSpecification(const std::string& spec)
+    {
+        os << spec << std::endl;
+    }
 private:
     std::ostream& os;
 };
