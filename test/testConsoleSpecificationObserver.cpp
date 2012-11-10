@@ -39,8 +39,8 @@ struct ConsoleSpecificationObserver : testing::Test
 
 TEST_F(ConsoleSpecificationObserver, shouldReportFailedTestInfo)
 {
-    observer.testFailed(CxxSpec::AssertionFailed("{file}", 99, "{message}"));
-    EXPECT_EQ("{message}\nAt {file}:99\n", stream.str());
+    observer.testFailed(CxxSpec::AssertionFailed("{file}", 99, "{expression}", "{expectation}"));
+    EXPECT_EQ("{expression} {expectation}\nAt {file}:99\n", stream.str());
 }
 
 TEST_F(ConsoleSpecificationObserver, shouldReportSpecificationName)

@@ -38,7 +38,7 @@ public:
     ConsoleSpecificationObserver(std::ostream& os) : os(os) { }
     virtual void testFailed(const CxxSpec::AssertionFailed& af)
     {
-        os << af.expression() << std::endl;
+        os << af.expression() << " " << af.expectation() << std::endl;
         os << "At " << af.file() << ":" << af.line() << std::endl;
     }
     virtual void testingSpecification(const std::string& spec)
