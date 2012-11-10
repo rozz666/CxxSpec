@@ -27,45 +27,56 @@
 #include <CxxSpec/SpecificationRegistry.hpp>
 #include <iostream>
 #include <CxxSpec/ISpecificationObserver.hpp>
-#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include <SpecificationVisitorMock.hpp>
+#include "SpecificationObserverMock.hpp"
 
-class SpecificationVisitorStub : public CxxSpec::ISpecificationVisitor
+using namespace testing;
+
+struct SpecificationRegistryTest : testing::Test
 {
-    virtual void beginSpecification() { }
-    virtual void endSpecification() { }
-    virtual bool beginSection(const std::string& ) { return false; }
-    virtual void endSection() { }
-};
+    NiceMock<SpecificationVisitorMock> sv;
+    CxxSpec::SpecificationRegistry registry;
+    StrictMock<SpecificationObserverMock> so;
 
-struct SpecificationObserverFake : CxxSpec::ISpecificationObserver
-{
-    std::vector<std::string> expressions;
-
-    virtual void testFailed(const CxxSpec::AssertionFailed& af)
+    SpecificationRegistryTest() : registry(sv)
     {
-        expressions.push_back(af.expression());
+        ON_CALL(sv, beginSection(_)).WillByDefault(Return(false));
+    }
+
+    static bool dummySpecification1Called;
+    static bool dummySpecification2Called;
+    static CxxSpec::ISpecificationVisitor *dummySpecification1Visitor;
+
+    static void dummySpecification1(CxxSpec::ISpecificationVisitor& sv)
+    {
+        dummySpecification1Called = true;
+        dummySpecification1Visitor = &sv;
+    }
+
+    static void dummySpecification2(CxxSpec::ISpecificationVisitor& sv)
+    {
+        dummySpecification2Called = true;
+    }
+
+    static void specificationWithError1(CxxSpec::ISpecificationVisitor& sv)
+    {
+        throw CxxSpec::AssertionFailed("", 1, "", "");
+    }
+
+    static void specificationWithError2(CxxSpec::ISpecificationVisitor& sv)
+    {
+        throw CxxSpec::AssertionFailed("", 2, "", "");
     }
 };
 
-bool dummySpecification1Called;
-bool dummySpecification2Called;
-CxxSpec::ISpecificationVisitor *dummySpecification1Visitor;
+bool SpecificationRegistryTest::dummySpecification1Called = false;
+bool SpecificationRegistryTest::dummySpecification2Called = false;
+CxxSpec::ISpecificationVisitor *SpecificationRegistryTest::dummySpecification1Visitor = nullptr;
 
-void dummySpecification1(CxxSpec::ISpecificationVisitor& sv)
-{
-    dummySpecification1Called = true;
-    dummySpecification1Visitor = &sv;
-}
 
-void dummySpecification2(CxxSpec::ISpecificationVisitor& sv)
+TEST_F(SpecificationRegistryTest, shouldRunSpecificationsAndPassVisitor)
 {
-    dummySpecification2Called = true;
-}
-
-TEST(SpecificationRegistryTest, RegisterAndRun)
-{
-    SpecificationVisitorStub sv;
-    CxxSpec::SpecificationRegistry registry(sv);
     registry.registerSpecification("", &dummySpecification1);
     registry.registerSpecification("", &dummySpecification2);
 
@@ -73,7 +84,6 @@ TEST(SpecificationRegistryTest, RegisterAndRun)
     dummySpecification1Visitor = nullptr;
     dummySpecification2Called = false;
 
-    SpecificationObserverFake so;
     registry.runAll(so);
 
     ASSERT_TRUE(dummySpecification1Called);
@@ -81,35 +91,18 @@ TEST(SpecificationRegistryTest, RegisterAndRun)
     ASSERT_TRUE(dummySpecification2Called);
 }
 
-TEST(SpecificationRegistryTest, RunEmpty)
+TEST_F(SpecificationRegistryTest, shouldDoNothingWhenEmpty)
 {
-    SpecificationVisitorStub sv;
-    CxxSpec::SpecificationRegistry registry(sv);
-    SpecificationObserverFake so;
     registry.runAll(so);
 }
 
-void specificationWithError1(CxxSpec::ISpecificationVisitor& sv)
+TEST_F(SpecificationRegistryTest, shouldCatchFailedAssertions)
 {
-    CXXSPEC_EXPECT(1 == 2).should.beTrue();
-}
-
-void specificationWithError2(CxxSpec::ISpecificationVisitor& sv)
-{
-    CXXSPEC_EXPECT(3 != 3).should.beTrue();
-}
-
-TEST(SpecificationRegistryTest, RunWithErrors)
-{
-    SpecificationVisitorStub sv;
-    CxxSpec::SpecificationRegistry registry(sv);
     registry.registerSpecification("", &specificationWithError1);
     registry.registerSpecification("", &specificationWithError2);
 
-    SpecificationObserverFake so;
+    EXPECT_CALL(so, testFailed(Property(&CxxSpec::AssertionFailed::line, 1)));
+    EXPECT_CALL(so, testFailed(Property(&CxxSpec::AssertionFailed::line, 2)));
 
     registry.runAll(so);
-    ASSERT_TRUE(so.expressions.size() == 2);
-    ASSERT_TRUE(so.expressions[0] == "1 == 2");
-    ASSERT_TRUE(so.expressions[1] == "3 != 3");
 }
