@@ -145,5 +145,5 @@ TEST_F(AssertionTest, operatorEqShouldPrintValuesWhenExpressionsArePrintable)
 {
     expectAssertionFailed(
         []{ CXXSPEC_EXPECT(4).should == 8; },
-        "expected to be equal 8 but equals 4");
+        "expected to equal 8 but equals 4");
 }

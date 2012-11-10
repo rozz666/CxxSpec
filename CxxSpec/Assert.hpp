@@ -74,7 +74,7 @@ struct Messages<Expression, true>
 {
     static std::string equalityFailed(const Expression& actual, const Expression& expected)
     {
-        return "expected to be equal " + toString(expected) + " but equals " + toString(actual);
+        return "expected to equal " + toString(expected) + " but equals " + toString(actual);
     }
 };
 
