@@ -28,9 +28,18 @@
 #ifndef CXXSPEC_ASSERT_HPP
 #define CXXSPEC_ASSERT_HPP
 #include <CxxSpec/AssertionFailed.hpp>
+#include <sstream>
 
 namespace CxxSpec
 {
+
+template <typename Expression>
+inline std::string toString(const Expression& expr)
+{
+    std::ostringstream os;
+    os << expr;
+    return os.str();
+}
 
 template <typename Expression>
 class Should

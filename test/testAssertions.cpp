@@ -29,6 +29,28 @@
 #include <sstream>
 #include <gtest/gtest.h>
 
+namespace
+{
+
+class Printable {
+    Printable(const Printable& );
+    Printable& operator=(const Printable& );
+public:
+    Printable() { }
+};
+
+std::ostream& operator<<(std::ostream& os, const Printable& )
+{
+    return os << "Printable";
+}
+
+}
+
+TEST(AssertionTest, toStringShouldNotCopyExpressionAndUseLeftShiftOperatorToConvertItToString)
+{
+    ASSERT_EQ("Printable", CxxSpec::toString(Printable()));
+}
+
 TEST(AssertionTest, beTrueShouldNotThrowWhenExpressionIsTrue)
 {
     ASSERT_NO_THROW(
