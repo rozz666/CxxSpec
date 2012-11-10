@@ -42,8 +42,7 @@ public:
 
     virtual void beginSpecification()
     {
-        state.beginSection = &SpecificationExecutor::following_beginSection;
-        state.endSection = &SpecificationExecutor::following_endSection;
+        state = State::following();
 
         followNextPath();
         markEnterFirstSection();
@@ -55,12 +54,12 @@ public:
 
     virtual bool beginSection(const std::string& desc)
     {
-        return (this->*state.beginSection)(desc);
+        return state.beginSection(*this, desc);
     }
 
     virtual void endSection()
     {
-        (this->*state.endSection)();
+        state.endSection(*this);
     }
 
     bool done() const
@@ -70,7 +69,7 @@ public:
 
     void caughtException()
     {
-        if (state.beginSection == &SpecificationExecutor::expectSection_beginSection)
+        if (state.moreSectionsPossible())
             assumeMoreSectionsToVisit = true;
     }
 
@@ -78,12 +77,60 @@ private:
 
     struct State
     {
-        bool (SpecificationExecutor:: *beginSection)(const std::string& desc);
-        void (SpecificationExecutor:: *endSection)();
+        typedef bool (SpecificationExecutor:: *BeginSection)(const std::string& desc);
+        typedef void (SpecificationExecutor:: *EndSection)();
+        BeginSection beginSection_;
+        EndSection endSection_;
+        bool moreSectionsPossible_;
 
-        State()
-            : beginSection(&SpecificationExecutor::finishing_beginSection),
-            endSection(&SpecificationExecutor::finishing_endSection) { }
+        static State following()
+        {
+            return State(
+                &SpecificationExecutor::following_beginSection,
+                &SpecificationExecutor::following_endSection,
+                false);
+        }
+
+        static State running()
+        {
+            return State(
+                &SpecificationExecutor::running_beginSection,
+                &SpecificationExecutor::running_endSection,
+                true);
+        }
+
+        static State finishing()
+        {
+            return State(
+                &SpecificationExecutor::finishing_beginSection,
+                &SpecificationExecutor::finishing_endSection,
+                true);
+        }
+
+        static State expectingSection()
+        {
+            return State(
+                &SpecificationExecutor::expectSection_beginSection,
+                &SpecificationExecutor::expectSection_endSection,
+                true);
+        }
+
+        State(BeginSection begin, EndSection end, bool moreSectionsPossible)
+            : beginSection_(begin), endSection_(end), moreSectionsPossible_(moreSectionsPossible) { }
+
+        State() { *this = finishing(); }
+
+        bool beginSection(SpecificationExecutor& executor, const std::string& desc) const
+        {
+            return (executor.*beginSection_)(desc);
+        }
+
+        void endSection(SpecificationExecutor& executor) const
+        {
+            (executor.*endSection_)();
+        }
+
+        bool moreSectionsPossible() const { return moreSectionsPossible_; }
     };
 
     State state;
@@ -104,8 +151,7 @@ private:
             currentPath.pop_back();
             if (currentPath.empty())
             {
-                state.beginSection = &SpecificationExecutor::running_beginSection;
-                state.endSection = &SpecificationExecutor::running_endSection;
+                state = State::running();
             }
             return true;
         }
@@ -144,8 +190,7 @@ private:
 
     void running_endSection()
     {
-        state.beginSection = &SpecificationExecutor::expectSection_beginSection;
-        state.endSection = &SpecificationExecutor::expectSection_endSection;
+        state = State::expectingSection();
 
         markLeaveSectionAndEnterNext();
     }
@@ -154,8 +199,7 @@ private:
     {
         assumeMoreSectionsToVisit = true;
 
-        state.beginSection = &SpecificationExecutor::finishing_beginSection;
-        state.endSection = &SpecificationExecutor::finishing_endSection;
+        state = State::finishing();
         return false;
     }
 
