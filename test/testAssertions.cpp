@@ -29,6 +29,23 @@
 #include <sstream>
 #include <gtest/gtest.h>
 
+struct AssertionTest : testing::Test
+{
+    template <typename F>
+    void expectAssertionFailed(F call, const std::string& expectation)
+    {
+        try
+        {
+            call();
+            FAIL() << "expected AssertionFailed";
+        }
+        catch (const CxxSpec::AssertionFailed& af)
+        {
+            EXPECT_EQ(expectation, af.expectation());
+        }
+    }
+};
+
 namespace
 {
 
@@ -46,18 +63,18 @@ std::ostream& operator<<(std::ostream& os, const Printable& )
 
 }
 
-TEST(AssertionTest, toStringShouldNotCopyExpressionAndUseLeftShiftOperatorToConvertItToString)
+TEST_F(AssertionTest, toStringShouldNotCopyExpressionAndUseLeftShiftOperatorToConvertItToString)
 {
     ASSERT_EQ("Printable", CxxSpec::toString(Printable()));
 }
 
-TEST(AssertionTest, CXXSPEC_EXPECT_shouldPassExpressionLineFileAndExpressionTextToExpectation)
+TEST_F(AssertionTest, CXXSPEC_EXPECT_shouldPassExpressionLineFileAndExpressionTextToExpectation)
 {
     int line;
     try
     {
         line = __LINE__; CXXSPEC_EXPECT(true && false).should.beTrue();
-        FAIL() << "must throw";
+        FAIL() << "expected AssertionFailed";
     }
     catch (const CxxSpec::AssertionFailed& af)
     {
@@ -67,7 +84,7 @@ TEST(AssertionTest, CXXSPEC_EXPECT_shouldPassExpressionLineFileAndExpressionText
     }
 }
 
-TEST(AssertionTest, beTrueShouldNotThrowWhenExpressionIsTrue)
+TEST_F(AssertionTest, beTrueShouldNotThrowWhenExpressionIsTrue)
 {
     ASSERT_NO_THROW(
     {
@@ -75,24 +92,14 @@ TEST(AssertionTest, beTrueShouldNotThrowWhenExpressionIsTrue)
     });
 }
 
-TEST(AssertionTest, beTrueShouldThrowWhenExpressionIsFalse)
+TEST_F(AssertionTest, beTrueShouldThrowWhenExpressionIsFalse)
 {
-    int line;
-    try
-    {
-        line = __LINE__; CXXSPEC_EXPECT(3 == 5).should.beTrue();
-        FAIL() << "must throw";
-    }
-    catch (const CxxSpec::AssertionFailed& af)
-    {
-        EXPECT_EQ(__FILE__, af.file());
-        EXPECT_EQ(line, af.line());
-        EXPECT_EQ("3 == 5", af.expression());
-        EXPECT_EQ("expected to be true but is false", af.expectation());
-    }
+    expectAssertionFailed(
+        []{ CXXSPEC_EXPECT(3 == 5).should.beTrue(); },
+        "expected to be true but is false");
 }
 
-TEST(AssertionTest, shouldShouldBeOfDifferentTypeThanExpectation)
+TEST_F(AssertionTest, shouldShouldBeOfDifferentTypeThanExpectation)
 {
     ASSERT_TRUE(typeid(CXXSPEC_EXPECT(0)) != typeid(CXXSPEC_EXPECT(0).should));
 }
@@ -116,24 +123,14 @@ private:
 
 }
 
-TEST(AssertionTest, operatorEqShouldNotThrowWhenExpressionsAreEqual)
+TEST_F(AssertionTest, operatorEqShouldNotThrowWhenExpressionsAreEqual)
 {
     CXXSPEC_EXPECT(OperatorEqOnly(7)).should == OperatorEqOnly(7);
 }
 
-TEST(AssertionTest, operatorEqShouldThrowWhenExpressionsAreNotEqual)
+TEST_F(AssertionTest, operatorEqShouldThrowWhenExpressionsAreNotEqual)
 {
-    int line;
-    try
-    {
-        line = __LINE__; CXXSPEC_EXPECT(OperatorEqOnly(7)).should == OperatorEqOnly(8);
-        FAIL() << "must throw";
-    }
-    catch (const CxxSpec::AssertionFailed& af)
-    {
-        EXPECT_EQ(__FILE__, af.file());
-        EXPECT_EQ(line, af.line());
-        EXPECT_EQ("OperatorEqOnly(7)", af.expression());
-        EXPECT_EQ("failed equality check", af.expectation());
-    }
+    expectAssertionFailed(
+        []{ CXXSPEC_EXPECT(OperatorEqOnly(7)).should == OperatorEqOnly(8); },
+        "failed equality check");
 }
