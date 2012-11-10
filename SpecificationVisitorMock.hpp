@@ -36,6 +36,8 @@ struct SpecificationVisitorMock : CxxSpec::ISpecificationVisitor
     MOCK_METHOD0(endSpecification, void());
     MOCK_METHOD1(beginSection, bool(const std::string& ));
     MOCK_METHOD0(endSection, void());
+    MOCK_CONST_METHOD0(done, bool());
+    MOCK_METHOD0(caughtException, void());
 };
 
 #endif // SPECIFICATIONVISITORMOCK_HPP

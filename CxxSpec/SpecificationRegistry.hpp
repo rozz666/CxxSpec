@@ -43,15 +43,12 @@ namespace CxxSpec
 class SpecificationRegistry
 {
 public:
-    SpecificationRegistry(ISpecificationVisitor& specificationVisitor)
-        : specificationVisitor(specificationVisitor)
-    {
-    }
+    SpecificationRegistry(ISpecificationVisitorFactory specificationVisitorFactory)
+        : specificationVisitorFactory(specificationVisitorFactory) { }
 
     static SpecificationRegistry& getInstance()
     {
-        static SpecificationExecutor executor;
-        static SpecificationRegistry registry(executor);
+        static SpecificationRegistry registry([]{ return std::make_shared<SpecificationExecutor>(); });
         return registry;
     }
 
@@ -61,20 +58,22 @@ public:
     }
     void runAll(ISpecificationObserver& so)
     {
-        for (auto it : specs)
+        for (auto spec : specs)
         {
+            std::shared_ptr<ISpecificationVisitor> specificationVisitor = specificationVisitorFactory();
             try
             {
-                (*it)(specificationVisitor);
+                (*spec)(*specificationVisitor);
             }
             catch (const AssertionFailed& af)
             {
+                specificationVisitor->caughtException();
                 so.testFailed(af);
             }
         }
     }
 private:
-    ISpecificationVisitor& specificationVisitor;
+    ISpecificationVisitorFactory specificationVisitorFactory;
     std::vector<SpecificationFunction> specs;
 };
 

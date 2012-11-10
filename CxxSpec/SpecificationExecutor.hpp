@@ -62,12 +62,12 @@ public:
         state.endSection(*this);
     }
 
-    bool done() const
+    virtual bool done() const
     {
         return !assumeMoreSectionsToVisit;
     }
 
-    void caughtException()
+    virtual void caughtException()
     {
         if (state.moreSectionsPossible())
             assumeMoreSectionsToVisit = true;

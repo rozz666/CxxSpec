@@ -35,13 +35,22 @@ using namespace testing;
 
 struct SpecificationRegistryTest : testing::Test
 {
-    NiceMock<SpecificationVisitorMock> visitor;
+    std::shared_ptr<SpecificationVisitorMock> visitor1;
+    std::shared_ptr<SpecificationVisitorMock> visitor2;
     CxxSpec::SpecificationRegistry registry;
     StrictMock<SpecificationObserverMock> observer;
 
-    SpecificationRegistryTest() : registry(visitor)
+    MOCK_METHOD0(visitorFactory, std::shared_ptr<CxxSpec::ISpecificationVisitor>());
+
+    SpecificationRegistryTest()
+        : visitor1(std::make_shared<NiceMock<SpecificationVisitorMock>>()),
+        visitor2(std::make_shared<NiceMock<SpecificationVisitorMock>>()),
+        registry([&]{ return visitorFactory(); })
     {
-        ON_CALL(visitor, beginSection(_)).WillByDefault(Return(false));
+        ON_CALL(*visitor1, beginSection(_)).WillByDefault(Return(false));
+        ON_CALL(*visitor2, beginSection(_)).WillByDefault(Return(false));
+        ON_CALL(*visitor1, done()).WillByDefault(Return(true));
+        ON_CALL(*visitor2, done()).WillByDefault(Return(true));
     }
 
     static bool dummySpecification1Called;
@@ -75,10 +84,14 @@ bool SpecificationRegistryTest::dummySpecification2Called = false;
 CxxSpec::ISpecificationVisitor *SpecificationRegistryTest::dummySpecification1Visitor = nullptr;
 
 
-TEST_F(SpecificationRegistryTest, shouldRunSpecificationsAndPassVisitor)
+TEST_F(SpecificationRegistryTest, shouldRunSpecificationsInOrderAndPassNewVisitorForEachOne)
 {
     registry.registerSpecification("", &dummySpecification1);
     registry.registerSpecification("", &dummySpecification2);
+
+    EXPECT_CALL(*this, visitorFactory())
+        .WillOnce(Return(visitor1))
+        .WillOnce(Return(visitor2));
 
     dummySpecification1Called = false;
     dummySpecification1Visitor = nullptr;
@@ -87,7 +100,7 @@ TEST_F(SpecificationRegistryTest, shouldRunSpecificationsAndPassVisitor)
     registry.runAll(observer);
 
     ASSERT_TRUE(dummySpecification1Called);
-    ASSERT_TRUE(dummySpecification1Visitor == &visitor);
+    ASSERT_TRUE(dummySpecification1Visitor == &*visitor1);
     ASSERT_TRUE(dummySpecification2Called);
 }
 
@@ -101,8 +114,13 @@ TEST_F(SpecificationRegistryTest, shouldCatchFailedAssertions)
     registry.registerSpecification("", &specificationWithError1);
     registry.registerSpecification("", &specificationWithError2);
 
+    EXPECT_CALL(*this, visitorFactory())
+        .WillOnce(Return(visitor1))
+        .WillOnce(Return(visitor2));
     EXPECT_CALL(observer, testFailed(Property(&CxxSpec::AssertionFailed::line, 1)));
+    EXPECT_CALL(*visitor1, caughtException());
     EXPECT_CALL(observer, testFailed(Property(&CxxSpec::AssertionFailed::line, 2)));
+    EXPECT_CALL(*visitor2, caughtException());
 
     registry.runAll(observer);
 }

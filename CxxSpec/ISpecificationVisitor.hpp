@@ -28,6 +28,8 @@
 #ifndef CXXSPEC_ISPECIFICATIONVISITOR_HPP
 #define CXXSPEC_ISPECIFICATIONVISITOR_HPP
 #include <string>
+#include <functional>
+#include <memory>
 
 namespace CxxSpec {
 
@@ -39,7 +41,11 @@ public:
     virtual void endSpecification() = 0;
     virtual bool beginSection(const std::string& desc) = 0;
     virtual void endSection() = 0;
+    virtual bool done() const = 0;
+    virtual void caughtException() = 0;
 };
+
+typedef std::function<std::shared_ptr<ISpecificationVisitor>()> ISpecificationVisitorFactory;
 
 }
 

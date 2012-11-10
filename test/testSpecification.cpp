@@ -244,6 +244,9 @@ public:
 
     virtual void endSection() { }
 
+    virtual bool done() const { return false; }
+    virtual void caughtException() { }
+
 private:
     std::set<std::string> selection;
 };
