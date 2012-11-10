@@ -32,10 +32,11 @@
 namespace CxxSpec
 {
 
+template <typename Expression>
 class Should
 {
 public:
-    Should(bool expr, std::string file, int line, std::string exprText)
+    Should(Expression expr, std::string file, int line, std::string exprText)
         : expr(expr), file(file), line(line), exprText(exprText) { }
 
     void beTrue()
@@ -43,8 +44,13 @@ public:
         if (!expr)
             throwAssertionFailed("expected to be true but is false");
     }
+
+    void operator==(Expression expected)
+    {
+    }
+
 private:
-    bool expr;
+    Expression expr;
     std::string file;
     int line;
     std::string exprText;
@@ -55,16 +61,23 @@ private:
     }
 };
 
+template <typename Expression>
 class Expectation
 {
 public:
-    Should should;
+    Should<Expression> should;
 
-    Expectation(bool expr, std::string file, int line, std::string exprText)
+    Expectation(Expression expr, std::string file, int line, std::string exprText)
         : should(expr, file, line, exprText) { }
 };
-        
-#define CXXSPEC_EXPECT(expr) CxxSpec::Expectation(expr, __FILE__, __LINE__, #expr)
+
+template <typename Expression>
+inline Expectation<Expression> makeExpectation(Expression expr, std::string file, int line, std::string exprText)
+{
+    return Expectation<Expression>(expr, file, line, exprText);
+}
+
+#define CXXSPEC_EXPECT(expr) CxxSpec::makeExpectation(expr, __FILE__, __LINE__, #expr)
 
 }
 

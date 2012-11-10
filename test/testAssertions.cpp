@@ -58,3 +58,27 @@ TEST(AssertionTest, shouldShouldBeOfDifferentTypeThanExpectation)
 {
     ASSERT_TRUE(typeid(CXXSPEC_EXPECT(0)) != typeid(CXXSPEC_EXPECT(0).should));
 }
+
+namespace
+{
+
+class OperatorEqOnly
+{
+public:
+    explicit OperatorEqOnly(int value) : value(value) { }
+
+    friend bool operator==(const OperatorEqOnly& left, const OperatorEqOnly& right)
+    {
+        return left.value == right.value;
+    }
+private:
+    int value;
+};
+
+
+}
+
+TEST(AssertionTest, operatorEqShouldNotThrowWhenExpressionsAreEqual)
+{
+    CXXSPEC_EXPECT(OperatorEqOnly(7)).should == OperatorEqOnly(7);
+}
