@@ -35,9 +35,9 @@ namespace CxxSpec {
 class SpecificationExecutor : public ISpecificationVisitor
 {
 public:
-    SpecificationExecutor()
+    SpecificationExecutor() : moreNodesToVisit(false), visitedSections(false)
     {
-        pushNext();
+        markEnterFirstSection();
     }
 
     virtual void beginSpecification()
@@ -45,10 +45,10 @@ public:
         state.beginSection = &SpecificationExecutor::following_beginSection;
         state.endSection = &SpecificationExecutor::following_endSection;
 
-        path.assign(nextPath.rbegin(), nextPath.rend());
+        currentPath.assign(nextPath.rbegin(), nextPath.rend());
         nextPath.clear();
-        nextPath.push_back(0);
-        moreNodes = false;
+        markEnterFirstSection();
+        moreNodesToVisit = false;
     }
 
     virtual void endSpecification()
@@ -57,6 +57,7 @@ public:
 
     virtual bool beginSection(const std::string& desc)
     {
+        visitedSections = true;
         return (this->*state.beginSection)(desc);
     }
 
@@ -67,7 +68,13 @@ public:
 
     bool done() const
     {
-        return !moreNodes;
+        return !moreNodesToVisit;
+    }
+
+    void caughtException()
+    {
+        if (visitedSections)
+            moreNodesToVisit = true;
     }
 
 private:
@@ -76,18 +83,23 @@ private:
     {
         bool (SpecificationExecutor:: *beginSection)(const std::string& desc);
         void (SpecificationExecutor:: *endSection)();
+
+        State()
+            : beginSection(&SpecificationExecutor::finishing_beginSection),
+            endSection(&SpecificationExecutor::finishing_endSection) { }
     };
 
     State state;
-    std::vector<int> path, nextPath;
-    bool moreNodes;
+    std::vector<int> currentPath, nextPath;
+    bool moreNodesToVisit;
+    bool visitedSections;
 
-    bool getNextStep()
+    bool shouldEnterSection()
     {
-        if (path.back() == 0)
+        if (currentPath.back() == 0)
         {
-            path.pop_back();
-            if (path.empty())
+            currentPath.pop_back();
+            if (currentPath.empty())
             {
                 state.beginSection = &SpecificationExecutor::running_beginSection;
                 state.endSection = &SpecificationExecutor::running_endSection;
@@ -95,16 +107,16 @@ private:
             return true;
         }
 
-        path.back()--;
+        currentPath.back()--;
         return false;
     }
 
-    void pushNext()
+    void markEnterFirstSection()
     {
         nextPath.push_back(0);
     }
 
-    void popNext()
+    void markLeaveSectionAndEnterNext()
     {
         nextPath.pop_back();
         nextPath.back()++;
@@ -112,18 +124,18 @@ private:
 
     bool following_beginSection(const std::string& desc)
     {
-        pushNext();
-        return getNextStep();
+        markEnterFirstSection();
+        return shouldEnterSection();
     }
 
     void following_endSection()
     {
-        popNext();
+        markLeaveSectionAndEnterNext();
     }
 
     bool running_beginSection(const std::string& desc)
     {
-        pushNext();
+        markEnterFirstSection();
         return true;
     }
 
@@ -132,12 +144,12 @@ private:
         state.beginSection = &SpecificationExecutor::expectNode_beginSection;
         state.endSection = &SpecificationExecutor::expectNode_endSection;
 
-        popNext();
+        markLeaveSectionAndEnterNext();
     }
 
     bool expectNode_beginSection(const std::string& desc)
     {
-        moreNodes = true;
+        moreNodesToVisit = true;
 
         state.beginSection = &SpecificationExecutor::finishing_beginSection;
         state.endSection = &SpecificationExecutor::finishing_endSection;
@@ -146,7 +158,7 @@ private:
 
     void expectNode_endSection()
     {
-        popNext();
+        markLeaveSectionAndEnterNext();
     }
 
     bool finishing_beginSection(const std::string&)

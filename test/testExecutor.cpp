@@ -218,6 +218,7 @@ CXXSPEC_DESCRIBE("no section with exception")
 TEST_F(SpecificationExecutorTest, shouldFinishDescriptionWithNoSectionsAndPropagateTheException)
 {
     ASSERT_ANY_THROW(havingExecuted("no section with exception"));
+    executor.caughtException();
     ASSERT_TRUE(executor.done());
 }
 
@@ -225,6 +226,7 @@ CXXSPEC_DESCRIBE("nested sections with exception")
 {
     CXXSPEC_CONTEXT("")
     {
+        SpecificationExecutorTest::step(1);
         CXXSPEC_CONTEXT("")
         {
             CXXSPEC_CONTEXT("")
@@ -238,6 +240,48 @@ CXXSPEC_DESCRIBE("nested sections with exception")
 TEST_F(SpecificationExecutorTest, shouldFinishDescriptionWithNestedSectionsAndPropagateTheException)
 {
     ASSERT_ANY_THROW(havingExecuted("nested sections with exception"));
+    executor.caughtException();
+    ASSERT_FALSE(executor.done());
+
+    ASSERT_NO_THROW(havingExecuted("nested sections with exception"));
+    ASSERT_TRUE(executor.done());
+    ASSERT_THAT(steps, ElementsAre());
+}
+
+CXXSPEC_DESCRIBE("parallel with exceptions")
+{
+    CXXSPEC_CONTEXT("")
+    {
+        throw std::invalid_argument("");
+    }
+    CXXSPEC_CONTEXT("")
+    {
+        throw std::length_error("");
+    }
+    CXXSPEC_CONTEXT("")
+    {
+        throw std::out_of_range("");
+    }
+}
+
+TEST_F(SpecificationExecutorTest, shouldExecuteSectionsInOrderAndPropagateExceptions)
+{
+    ASSERT_THROW(havingExecuted("parallel with exceptions"), std::invalid_argument);
+    executor.caughtException();
+    ASSERT_FALSE(executor.done());
+
+    ASSERT_THROW(havingExecuted("parallel with exceptions"), std::length_error);
+    executor.caughtException();
+    ASSERT_FALSE(executor.done());
+
+    ASSERT_THROW(havingExecuted("parallel with exceptions"), std::out_of_range);
+    executor.caughtException();
+    ASSERT_FALSE(executor.done());
+
+    ASSERT_NO_THROW(havingExecuted("parallel with exceptions"));
+    ASSERT_TRUE(executor.done());
+
+    ASSERT_NO_THROW(havingExecuted("parallel with exceptions"));
     ASSERT_TRUE(executor.done());
 }
 
