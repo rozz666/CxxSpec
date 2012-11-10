@@ -68,6 +68,12 @@ TEST_F(AssertionTest, toStringShouldNotCopyExpressionAndUseLeftShiftOperatorToCo
     ASSERT_EQ("Printable", CxxSpec::toString(Printable()));
 }
 
+TEST_F(AssertionTest, toStringShouldPrintBoolCorrectly)
+{
+    ASSERT_EQ("true", CxxSpec::toString(true));
+    ASSERT_EQ("false", CxxSpec::toString(false));
+}
+
 TEST_F(AssertionTest, CXXSPEC_EXPECT_shouldPassExpressionLineFileAndExpressionTextToExpectation)
 {
     int line;

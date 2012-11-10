@@ -37,7 +37,7 @@ template <typename Expression>
 inline std::string toString(const Expression& expr)
 {
     std::ostringstream os;
-    os << expr;
+    os << std::boolalpha << expr;
     return os.str();
 }
 
