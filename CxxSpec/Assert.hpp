@@ -41,6 +41,43 @@ inline std::string toString(const Expression& expr)
     return os.str();
 }
 
+namespace Detail
+{
+
+struct UniqType
+{
+    char c[17943];
+};
+
+template <typename T>
+UniqType operator<<(std::ostream&, const T& );
+
+template <typename T>
+struct IsPrintable {
+    static const bool value =
+        sizeof(*static_cast<std::ostream *>(nullptr) << *static_cast<const T *>(nullptr)) != sizeof(UniqType);
+};
+
+};
+
+template <typename Expression, bool ExpressionPrintable = Detail::IsPrintable<Expression>::value>
+struct Messages
+{
+    static std::string equalityFailed(const Expression&, const Expression&)
+    {
+        return "failed equality check";
+    }
+};
+
+template <typename Expression>
+struct Messages<Expression, true>
+{
+    static std::string equalityFailed(const Expression& actual, const Expression& expected)
+    {
+        return "expected to be equal " + toString(expected) + " but equals " + toString(actual);
+    }
+};
+
 template <typename Expression>
 class Should
 {
@@ -57,7 +94,7 @@ public:
     void operator==(Expression expected)
     {
         if (!(expr == expected))
-            throwAssertionFailed("failed equality check");
+            throwAssertionFailed(Messages::equalityFailed(expr, expected));
     }
 
 private:
@@ -65,6 +102,8 @@ private:
     std::string file;
     int line;
     std::string exprText;
+
+    typedef CxxSpec::Messages<Expression> Messages;
 
     void throwAssertionFailed(const std::string& expectation)
     {

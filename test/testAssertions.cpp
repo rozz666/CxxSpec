@@ -134,3 +134,10 @@ TEST_F(AssertionTest, operatorEqShouldThrowWhenExpressionsAreNotEqual)
         []{ CXXSPEC_EXPECT(OperatorEqOnly(7)).should == OperatorEqOnly(8); },
         "failed equality check");
 }
+
+TEST_F(AssertionTest, operatorEqShouldPrintValuesWhenExpressionsArePrintable)
+{
+    expectAssertionFailed(
+        []{ CXXSPEC_EXPECT(4).should == 8; },
+        "expected to be equal 8 but equals 4");
+}
