@@ -51,6 +51,22 @@ TEST(AssertionTest, toStringShouldNotCopyExpressionAndUseLeftShiftOperatorToConv
     ASSERT_EQ("Printable", CxxSpec::toString(Printable()));
 }
 
+TEST(AssertionTest, CXXSPEC_EXPECT_shouldPassExpressionLineFileAndExpressionTextToExpectation)
+{
+    int line;
+    try
+    {
+        line = __LINE__; CXXSPEC_EXPECT(true && false).should.beTrue();
+        FAIL() << "must throw";
+    }
+    catch (const CxxSpec::AssertionFailed& af)
+    {
+        EXPECT_EQ(__FILE__, af.file());
+        EXPECT_EQ(line, af.line());
+        EXPECT_EQ("true && false", af.expression());
+    }
+}
+
 TEST(AssertionTest, beTrueShouldNotThrowWhenExpressionIsTrue)
 {
     ASSERT_NO_THROW(
