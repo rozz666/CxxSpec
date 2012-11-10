@@ -35,7 +35,7 @@ namespace CxxSpec {
 class SpecificationExecutor : public ISpecificationVisitor
 {
 public:
-    SpecificationExecutor() : moreNodesToVisit(false), visitedSections(false)
+    SpecificationExecutor() : assumeMoreSectionsToVisit(false)
     {
         markEnterFirstSection();
     }
@@ -45,10 +45,8 @@ public:
         state.beginSection = &SpecificationExecutor::following_beginSection;
         state.endSection = &SpecificationExecutor::following_endSection;
 
-        currentPath.assign(nextPath.rbegin(), nextPath.rend());
-        nextPath.clear();
+        followNextPath();
         markEnterFirstSection();
-        moreNodesToVisit = false;
     }
 
     virtual void endSpecification()
@@ -57,7 +55,6 @@ public:
 
     virtual bool beginSection(const std::string& desc)
     {
-        visitedSections = true;
         return (this->*state.beginSection)(desc);
     }
 
@@ -68,13 +65,13 @@ public:
 
     bool done() const
     {
-        return !moreNodesToVisit;
+        return !assumeMoreSectionsToVisit;
     }
 
     void caughtException()
     {
-        if (visitedSections)
-            moreNodesToVisit = true;
+        if (state.beginSection == &SpecificationExecutor::expectSection_beginSection)
+            assumeMoreSectionsToVisit = true;
     }
 
 private:
@@ -91,8 +88,14 @@ private:
 
     State state;
     std::vector<int> currentPath, nextPath;
-    bool moreNodesToVisit;
-    bool visitedSections;
+    bool assumeMoreSectionsToVisit;
+
+    void followNextPath()
+    {
+        currentPath.assign(nextPath.rbegin(), nextPath.rend());
+        nextPath.clear();
+        assumeMoreSectionsToVisit = false;
+    }
 
     bool shouldEnterSection()
     {
@@ -141,22 +144,22 @@ private:
 
     void running_endSection()
     {
-        state.beginSection = &SpecificationExecutor::expectNode_beginSection;
-        state.endSection = &SpecificationExecutor::expectNode_endSection;
+        state.beginSection = &SpecificationExecutor::expectSection_beginSection;
+        state.endSection = &SpecificationExecutor::expectSection_endSection;
 
         markLeaveSectionAndEnterNext();
     }
 
-    bool expectNode_beginSection(const std::string& desc)
+    bool expectSection_beginSection(const std::string& desc)
     {
-        moreNodesToVisit = true;
+        assumeMoreSectionsToVisit = true;
 
         state.beginSection = &SpecificationExecutor::finishing_beginSection;
         state.endSection = &SpecificationExecutor::finishing_endSection;
         return false;
     }
 
-    void expectNode_endSection()
+    void expectSection_endSection()
     {
         markLeaveSectionAndEnterNext();
     }
