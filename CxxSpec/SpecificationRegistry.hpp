@@ -61,15 +61,18 @@ public:
         for (auto spec : specs)
         {
             std::shared_ptr<ISpecificationVisitor> specificationVisitor = specificationVisitorFactory();
-            try
-            {
-                (*spec)(*specificationVisitor);
+            do {
+                try
+                {
+                    (*spec)(*specificationVisitor);
+                }
+                catch (const AssertionFailed& af)
+                {
+                    specificationVisitor->caughtException();
+                    so.testFailed(af);
+                }
             }
-            catch (const AssertionFailed& af)
-            {
-                specificationVisitor->caughtException();
-                so.testFailed(af);
-            }
+            while (!specificationVisitor->done());
         }
     }
 private:

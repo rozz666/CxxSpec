@@ -124,3 +124,22 @@ TEST_F(SpecificationRegistryTest, shouldCatchFailedAssertions)
 
     registry.runAll(observer);
 }
+
+TEST_F(SpecificationRegistryTest, shouldVisitSpecificationUntilDoneAndCatchAssertionsEachTime)
+{
+    registry.registerSpecification("", &specificationWithError1);
+
+    EXPECT_CALL(*this, visitorFactory())
+        .WillOnce(Return(visitor1));
+    {
+        InSequence seq;
+        EXPECT_CALL(observer, testFailed(_));
+        EXPECT_CALL(*visitor1, done()).WillOnce(Return(false));
+        EXPECT_CALL(observer, testFailed(_));
+        EXPECT_CALL(*visitor1, done()).WillOnce(Return(false));
+        EXPECT_CALL(observer, testFailed(_));
+        EXPECT_CALL(*visitor1, done()).WillOnce(Return(true));
+    }
+
+    registry.runAll(observer);
+}
