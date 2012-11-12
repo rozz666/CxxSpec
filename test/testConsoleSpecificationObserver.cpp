@@ -30,11 +30,11 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
-struct ConsoleSpecificationObserver : testing::Test
+struct ConsoleSpecificationObserverTest : testing::Test
 {
     std::ostringstream stream;
     CxxSpec::ConsoleSpecificationObserver observer;
-    ConsoleSpecificationObserver() : observer(stream) { }
+    ConsoleSpecificationObserverTest() : observer(stream) { }
 
     void expectOutput(const std::string& output)
     {
@@ -43,19 +43,19 @@ struct ConsoleSpecificationObserver : testing::Test
     }
 };
 
-TEST_F(ConsoleSpecificationObserver, shouldReportFailedTestInfo)
+TEST_F(ConsoleSpecificationObserverTest, shouldReportFailedTestInfo)
 {
     observer.testFailed(CxxSpec::AssertionFailed("{file}", 99, "{expression}", "{expectation}"));
     expectOutput("{expression} {expectation}\nAt {file}:99\n");
 }
 
-TEST_F(ConsoleSpecificationObserver, shouldReportSpecificationName)
+TEST_F(ConsoleSpecificationObserverTest, shouldReportSpecificationName)
 {
     observer.testingSpecification("{spec}");
     expectOutput("{spec}\n");
 }
 
-TEST_F(ConsoleSpecificationObserver, shouldReportEnteredContextNameWithIndentationProportionalToDepth)
+TEST_F(ConsoleSpecificationObserverTest, shouldReportEnteredContextNameWithIndentationProportionalToDepth)
 {
     observer.enteredContext("{context1}");
     expectOutput("    {context1}\n");
