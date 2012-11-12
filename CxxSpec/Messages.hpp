@@ -25,33 +25,58 @@
 */
 
 
-#ifndef CXXSPEC_ASSERT_HPP
-#define CXXSPEC_ASSERT_HPP
-#include <CxxSpec/Messages.hpp>
-#include <CxxSpec/Should.hpp>
+#ifndef CXXSPEC_MESSAGES_HPP
+#define CXXSPEC_MESSAGES_HPP
+#include <iomanip>
 #include <sstream>
 
-namespace CxxSpec
-{
+namespace CxxSpec {
 
 template <typename Expression>
-class Expectation
+inline std::string toString(const Expression& expr)
 {
-public:
-    Should<Expression> should;
+    std::ostringstream os;
+    os << std::boolalpha << expr;
+    return os.str();
+}
 
-    Expectation(Expression expr, std::string file, int line, std::string exprText)
-        : should(expr, file, line, exprText) { }
+namespace Detail
+{
+
+struct UniqType
+{
+    char c[17943];
+};
+
+template <typename T>
+UniqType operator<<(std::ostream&, const T& );
+
+template <typename T>
+struct IsPrintable {
+    static const bool value =
+        sizeof(*static_cast<std::ostream *>(nullptr) << *static_cast<const T *>(nullptr)) != sizeof(UniqType);
+};
+
+};
+
+template <typename Expression, bool ExpressionPrintable = Detail::IsPrintable<Expression>::value>
+struct Messages
+{
+    static std::string equalityFailed(const Expression&, const Expression&)
+    {
+        return "failed equality check";
+    }
 };
 
 template <typename Expression>
-inline Expectation<Expression> makeExpectation(Expression expr, std::string file, int line, std::string exprText)
+struct Messages<Expression, true>
 {
-    return Expectation<Expression>(expr, file, line, exprText);
+    static std::string equalityFailed(const Expression& actual, const Expression& expected)
+    {
+        return "expected to equal " + toString(expected) + " but equals " + toString(actual);
+    }
+};
+
 }
 
-#define CXXSPEC_EXPECT(expr) CxxSpec::makeExpectation(expr, __FILE__, __LINE__, #expr)
-
-}
-
-#endif // CXXSPEC_ASSERT_HPP
+#endif // CXXSPEC_MESSAGES_HPP

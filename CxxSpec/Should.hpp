@@ -25,33 +25,45 @@
 */
 
 
-#ifndef CXXSPEC_ASSERT_HPP
-#define CXXSPEC_ASSERT_HPP
-#include <CxxSpec/Messages.hpp>
-#include <CxxSpec/Should.hpp>
-#include <sstream>
+#ifndef CXXSPEC_SHOULD_HPP
+#define CXXSPEC_SHOULD_HPP
+#include <CxxSpec/AssertionFailed.hpp>
 
-namespace CxxSpec
-{
+namespace CxxSpec {
 
 template <typename Expression>
-class Expectation
+class Should
 {
 public:
-    Should<Expression> should;
+    Should(Expression expr, std::string file, int line, std::string exprText)
+        : expr(expr), file(file), line(line), exprText(exprText) { }
 
-    Expectation(Expression expr, std::string file, int line, std::string exprText)
-        : should(expr, file, line, exprText) { }
+    void beTrue()
+    {
+        if (!expr)
+            throwAssertionFailed("expected to be true but is false");
+    }
+
+    void operator==(Expression expected)
+    {
+        if (!(expr == expected))
+            throwAssertionFailed(Messages::equalityFailed(expr, expected));
+    }
+
+private:
+    Expression expr;
+    std::string file;
+    int line;
+    std::string exprText;
+
+    typedef CxxSpec::Messages<Expression> Messages;
+
+    void throwAssertionFailed(const std::string& expectation)
+    {
+        throw AssertionFailed(file, line, exprText, expectation);
+    }
 };
 
-template <typename Expression>
-inline Expectation<Expression> makeExpectation(Expression expr, std::string file, int line, std::string exprText)
-{
-    return Expectation<Expression>(expr, file, line, exprText);
 }
 
-#define CXXSPEC_EXPECT(expr) CxxSpec::makeExpectation(expr, __FILE__, __LINE__, #expr)
-
-}
-
-#endif // CXXSPEC_ASSERT_HPP
+#endif // CXXSPEC_SHOULD_HPP
