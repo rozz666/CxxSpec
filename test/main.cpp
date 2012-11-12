@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv)
 {
-    CxxSpec::ConsoleSpecificationObserver cso(std::cerr);
+    auto cso = std::make_shared<CxxSpec::ConsoleSpecificationObserver>(std::cerr);
     CxxSpec::SpecificationRegistry::getInstance().runAll(cso);
 
     testing::InitGoogleTest(&argc, argv);

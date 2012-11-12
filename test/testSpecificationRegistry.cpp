@@ -38,14 +38,15 @@ struct SpecificationRegistryTest : testing::Test
     std::shared_ptr<SpecificationVisitorMock> visitor1;
     std::shared_ptr<SpecificationVisitorMock> visitor2;
     CxxSpec::SpecificationRegistry registry;
-    NiceMock<SpecificationObserverMock> observer;
+    std::shared_ptr<SpecificationObserverMock> observer;
 
     MOCK_METHOD0(visitorFactory, std::shared_ptr<CxxSpec::ISpecificationVisitor>());
 
     SpecificationRegistryTest()
         : visitor1(std::make_shared<NiceMock<SpecificationVisitorMock>>()),
         visitor2(std::make_shared<NiceMock<SpecificationVisitorMock>>()),
-        registry([&]{ return visitorFactory(); })
+        registry([&]{ return visitorFactory(); }),
+        observer(std::make_shared<NiceMock<SpecificationObserverMock>>())
     {
         ON_CALL(*visitor1, beginSection(_)).WillByDefault(Return(false));
         ON_CALL(*visitor2, beginSection(_)).WillByDefault(Return(false));
@@ -117,9 +118,9 @@ TEST_F(SpecificationRegistryTest, shouldCatchFailedAssertions)
     EXPECT_CALL(*this, visitorFactory())
         .WillOnce(Return(visitor1))
         .WillOnce(Return(visitor2));
-    EXPECT_CALL(observer, testFailed(Property(&CxxSpec::AssertionFailed::line, 1)));
+    EXPECT_CALL(*observer, testFailed(Property(&CxxSpec::AssertionFailed::line, 1)));
     EXPECT_CALL(*visitor1, caughtException());
-    EXPECT_CALL(observer, testFailed(Property(&CxxSpec::AssertionFailed::line, 2)));
+    EXPECT_CALL(*observer, testFailed(Property(&CxxSpec::AssertionFailed::line, 2)));
     EXPECT_CALL(*visitor2, caughtException());
 
     registry.runAll(observer);
@@ -133,11 +134,11 @@ TEST_F(SpecificationRegistryTest, shouldVisitSpecificationUntilDoneAndCatchAsser
         .WillOnce(Return(visitor1));
     {
         InSequence seq;
-        EXPECT_CALL(observer, testFailed(_));
+        EXPECT_CALL(*observer, testFailed(_));
         EXPECT_CALL(*visitor1, done()).WillOnce(Return(false));
-        EXPECT_CALL(observer, testFailed(_));
+        EXPECT_CALL(*observer, testFailed(_));
         EXPECT_CALL(*visitor1, done()).WillOnce(Return(false));
-        EXPECT_CALL(observer, testFailed(_));
+        EXPECT_CALL(*observer, testFailed(_));
         EXPECT_CALL(*visitor1, done()).WillOnce(Return(true));
     }
 
@@ -154,7 +155,7 @@ TEST_F(SpecificationRegistryTest, shouldNotifyObserverAboutSpecificationName)
         .WillOnce(Return(false))
         .WillOnce(Return(true));
 
-    EXPECT_CALL(observer, testingSpecification("spec1"));
+    EXPECT_CALL(*observer, testingSpecification("spec1"));
 
     registry.runAll(observer);
 }

@@ -56,11 +56,11 @@ public:
     {
         specs.push_back({ desc, f });
     }
-    void runAll(ISpecificationObserver& so)
+    void runAll(std::shared_ptr<ISpecificationObserver> so)
     {
         for (auto spec : specs)
         {
-            so.testingSpecification(spec.first);
+            so->testingSpecification(spec.first);
             std::shared_ptr<ISpecificationVisitor> specificationVisitor = specificationVisitorFactory();
             do {
                 try
@@ -70,7 +70,7 @@ public:
                 catch (const AssertionFailed& af)
                 {
                     specificationVisitor->caughtException();
-                    so.testFailed(af);
+                    so->testFailed(af);
                 }
             }
             while (!specificationVisitor->done());
