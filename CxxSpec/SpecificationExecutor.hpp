@@ -201,6 +201,7 @@ private:
 
     void running_endSection()
     {
+        if (observer) observer->leftContext();
         state = State::expectingSection();
 
         markLeaveSectionAndEnterNext();
@@ -216,6 +217,7 @@ private:
 
     void expectSection_endSection()
     {
+        if (observer) observer->leftContext();
         markLeaveSectionAndEnterNext();
     }
 

@@ -38,6 +38,7 @@ public:
     virtual void testFailed(const AssertionFailed& af) = 0;
     virtual void testingSpecification(const std::string& spec) = 0;
     virtual void enteredContext(const std::string& context) = 0;
+    virtual void leftContext() = 0;
 };
 
 }

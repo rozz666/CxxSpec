@@ -335,15 +335,17 @@ CXXSPEC_DESCRIBE("contexts")
     }
 }
 
-TEST_F(SpecificationExecutorTest, shouldNotifyAboutEnteringSections)
+TEST_F(SpecificationExecutorTest, shouldNotifyAboutEnteringAndLeavingSections)
 {
     executor.setObserver(observer);
     InSequence seq;
     EXPECT_CALL(*observer, enteredContext("a"));
     EXPECT_CALL(*observer, enteredContext("b"));
+    EXPECT_CALL(*observer, leftContext()).Times(2);
     havingExecuted("contexts");
 
     EXPECT_CALL(*observer, enteredContext("c"));
+    EXPECT_CALL(*observer, leftContext());
     havingExecuted("contexts");
 
     // no contexts
