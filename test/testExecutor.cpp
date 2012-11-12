@@ -44,10 +44,11 @@ struct SpecificationExecutorTest : testing::Test
     static std::vector<int> steps;
 
     std::shared_ptr<SpecificationObserverMock> observer;
-    SpecificationExecutor executor;
+    std::shared_ptr<SpecificationExecutor> executor;
 
     SpecificationExecutorTest()
-        : observer(std::make_shared<NiceMock<SpecificationObserverMock>>())
+        : observer(std::make_shared<NiceMock<SpecificationObserverMock>>()),
+        executor(std::make_shared<SpecificationExecutor>(nullptr))
     {
     }
 
@@ -59,7 +60,7 @@ struct SpecificationExecutorTest : testing::Test
     void havingExecuted(const std::string& specName)
     {
         steps.clear();
-        registeredSpec[specName](executor);
+        registeredSpec[specName](*executor);
     }
 };
 
@@ -85,7 +86,7 @@ CXXSPEC_DESCRIBE("no sections")
 TEST_F(SpecificationExecutorTest, shouldExecuteDescriptionWithNoSections)
 {
     havingExecuted("no sections");
-    ASSERT_TRUE(executor.done());
+    ASSERT_TRUE(executor->done());
     ASSERT_THAT(steps, ElementsAre(1));
 }
 
@@ -101,7 +102,7 @@ CXXSPEC_DESCRIBE("one section")
 TEST_F(SpecificationExecutorTest, shouldExecuteDescriptionWithOneSection)
 {
     havingExecuted("one section");
-    ASSERT_TRUE(executor.done());
+    ASSERT_TRUE(executor->done());
     ASSERT_THAT(steps, ElementsAre(1, 2));
 }
 
@@ -126,15 +127,15 @@ CXXSPEC_DESCRIBE("parallel")
 TEST_F(SpecificationExecutorTest, shouldExecuteSectionsInOrder)
 {
     havingExecuted("parallel");
-    ASSERT_FALSE(executor.done());
+    ASSERT_FALSE(executor->done());
     ASSERT_THAT(steps, ElementsAre(1, 11, 2));
 
     havingExecuted("parallel");
-    ASSERT_FALSE(executor.done());
+    ASSERT_FALSE(executor->done());
     ASSERT_THAT(steps, ElementsAre(1, 12, 2));
 
     havingExecuted("parallel");
-    ASSERT_TRUE(executor.done());
+    ASSERT_TRUE(executor->done());
     ASSERT_THAT(steps, ElementsAre(1, 13, 2));
 }
 
@@ -158,7 +159,7 @@ CXXSPEC_DESCRIBE("nested")
 TEST_F(SpecificationExecutorTest, shouldExecuteAllNestedSectionOnce)
 {
     havingExecuted("nested");
-    ASSERT_TRUE(executor.done());
+    ASSERT_TRUE(executor->done());
     ASSERT_THAT(steps, ElementsAre(1, 11, 111, 1111));
 }
 
@@ -197,23 +198,23 @@ CXXSPEC_DESCRIBE("parallel and nested")
 TEST_F(SpecificationExecutorTest, shouldExecuteSectionsDepthFirst)
 {
     havingExecuted("parallel and nested");
-    ASSERT_FALSE(executor.done());
+    ASSERT_FALSE(executor->done());
     ASSERT_THAT(steps, ElementsAre(1));
 
     havingExecuted("parallel and nested");
-    ASSERT_FALSE(executor.done());
+    ASSERT_FALSE(executor->done());
     ASSERT_THAT(steps, ElementsAre(2, 21, 211));
 
     havingExecuted("parallel and nested");
-    ASSERT_FALSE(executor.done());
+    ASSERT_FALSE(executor->done());
     ASSERT_THAT(steps, ElementsAre(2, 22));
 
     havingExecuted("parallel and nested");
-    ASSERT_FALSE(executor.done());
+    ASSERT_FALSE(executor->done());
     ASSERT_THAT(steps, ElementsAre(2, 23));
 
     havingExecuted("parallel and nested");
-    ASSERT_TRUE(executor.done());
+    ASSERT_TRUE(executor->done());
     ASSERT_THAT(steps, ElementsAre(3));
 }
 
@@ -225,8 +226,8 @@ CXXSPEC_DESCRIBE("no section with exception")
 TEST_F(SpecificationExecutorTest, shouldFinishDescriptionWithNoSectionsAndPropagateTheException)
 {
     ASSERT_ANY_THROW(havingExecuted("no section with exception"));
-    executor.caughtException();
-    ASSERT_TRUE(executor.done());
+    executor->caughtException();
+    ASSERT_TRUE(executor->done());
 }
 
 CXXSPEC_DESCRIBE("nested sections with exception")
@@ -247,11 +248,11 @@ CXXSPEC_DESCRIBE("nested sections with exception")
 TEST_F(SpecificationExecutorTest, shouldFinishDescriptionWithNestedSectionsAndPropagateTheException)
 {
     ASSERT_ANY_THROW(havingExecuted("nested sections with exception"));
-    executor.caughtException();
-    ASSERT_FALSE(executor.done());
+    executor->caughtException();
+    ASSERT_FALSE(executor->done());
 
     ASSERT_NO_THROW(havingExecuted("nested sections with exception"));
-    ASSERT_TRUE(executor.done());
+    ASSERT_TRUE(executor->done());
     ASSERT_THAT(steps, ElementsAre());
 }
 
@@ -274,22 +275,22 @@ CXXSPEC_DESCRIBE("parallel with exceptions")
 TEST_F(SpecificationExecutorTest, shouldExecuteSectionsInOrderAndPropagateExceptions)
 {
     ASSERT_THROW(havingExecuted("parallel with exceptions"), std::invalid_argument);
-    executor.caughtException();
-    ASSERT_FALSE(executor.done());
+    executor->caughtException();
+    ASSERT_FALSE(executor->done());
 
     ASSERT_THROW(havingExecuted("parallel with exceptions"), std::length_error);
-    executor.caughtException();
-    ASSERT_FALSE(executor.done());
+    executor->caughtException();
+    ASSERT_FALSE(executor->done());
 
     ASSERT_THROW(havingExecuted("parallel with exceptions"), std::out_of_range);
-    executor.caughtException();
-    ASSERT_FALSE(executor.done());
+    executor->caughtException();
+    ASSERT_FALSE(executor->done());
 
     ASSERT_NO_THROW(havingExecuted("parallel with exceptions"));
-    ASSERT_TRUE(executor.done());
+    ASSERT_TRUE(executor->done());
 
     ASSERT_NO_THROW(havingExecuted("parallel with exceptions"));
-    ASSERT_TRUE(executor.done());
+    ASSERT_TRUE(executor->done());
 }
 
 CXXSPEC_DESCRIBE("exception after sections")
@@ -308,17 +309,17 @@ CXXSPEC_DESCRIBE("exception after sections")
 TEST_F(SpecificationExecutorTest, shouldExecuteAllSectionsWhenExceptionIsThrownAfterThem)
 {
     ASSERT_ANY_THROW(havingExecuted("exception after sections"));
-    executor.caughtException();
-    ASSERT_FALSE(executor.done());
+    executor->caughtException();
+    ASSERT_FALSE(executor->done());
     ASSERT_THAT(steps, ElementsAre(1));
 
     ASSERT_ANY_THROW(havingExecuted("exception after sections"));
-    executor.caughtException();
-    ASSERT_FALSE(executor.done());
+    executor->caughtException();
+    ASSERT_FALSE(executor->done());
     ASSERT_THAT(steps, ElementsAre(2));
 
     ASSERT_ANY_THROW(havingExecuted("exception after sections"));
-    ASSERT_TRUE(executor.done());
+    ASSERT_TRUE(executor->done());
 }
 
 CXXSPEC_DESCRIBE("contexts")
@@ -337,7 +338,7 @@ CXXSPEC_DESCRIBE("contexts")
 
 TEST_F(SpecificationExecutorTest, shouldNotifyAboutEnteringAndLeavingSections)
 {
-    executor.setObserver(observer);
+    executor = std::make_shared<SpecificationExecutor>(observer);
     InSequence seq;
     EXPECT_CALL(*observer, enteredContext("a"));
     EXPECT_CALL(*observer, enteredContext("b"));

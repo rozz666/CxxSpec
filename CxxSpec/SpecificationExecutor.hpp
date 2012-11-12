@@ -36,8 +36,8 @@ namespace CxxSpec {
 class SpecificationExecutor : public ISpecificationVisitor
 {
 public:
-    SpecificationExecutor()
-        : assumeMoreSectionsToVisit(false)
+    SpecificationExecutor(std::shared_ptr<ISpecificationObserver> observer)
+        : assumeMoreSectionsToVisit(false), observer(observer)
     {
         markEnterFirstSection();
     }
@@ -73,11 +73,6 @@ public:
     {
         if (state.moreSectionsPossible())
             assumeMoreSectionsToVisit = true;
-    }
-
-    void setObserver(std::shared_ptr<ISpecificationObserver> observer)
-    {
-        this->observer = observer;
     }
 
 private:
