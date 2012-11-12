@@ -45,6 +45,7 @@ public:
     {
         os << spec << std::endl;
     }
+    virtual void enteredContext(const std::string& ) { }
 private:
     std::ostream& os;
 };

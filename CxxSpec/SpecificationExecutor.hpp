@@ -28,6 +28,7 @@
 #ifndef CXXSPEC_SPECIFICATIONEXECUTOR_HPP
 #define CXXSPEC_SPECIFICATIONEXECUTOR_HPP
 #include <CxxSpec/ISpecificationVisitor.hpp>
+#include <CxxSpec/ISpecificationObserver.hpp>
 #include <vector>
 
 namespace CxxSpec {
@@ -35,7 +36,8 @@ namespace CxxSpec {
 class SpecificationExecutor : public ISpecificationVisitor
 {
 public:
-    SpecificationExecutor() : assumeMoreSectionsToVisit(false)
+    SpecificationExecutor()
+        : assumeMoreSectionsToVisit(false)
     {
         markEnterFirstSection();
     }
@@ -71,6 +73,11 @@ public:
     {
         if (state.moreSectionsPossible())
             assumeMoreSectionsToVisit = true;
+    }
+
+    void setObserver(std::shared_ptr<ISpecificationObserver> observer)
+    {
+        this->observer = observer;
     }
 
 private:
@@ -136,6 +143,7 @@ private:
     State state;
     std::vector<int> currentPath, nextPath;
     bool assumeMoreSectionsToVisit;
+    std::shared_ptr<ISpecificationObserver> observer;
 
     void followNextPath()
     {
@@ -174,7 +182,9 @@ private:
     bool following_beginSection(const std::string& desc)
     {
         markEnterFirstSection();
-        return shouldEnterSection();
+        if (!shouldEnterSection()) return false;
+        if (observer) observer->enteredContext(desc);
+        return true;
     }
 
     void following_endSection()
@@ -184,6 +194,7 @@ private:
 
     bool running_beginSection(const std::string& desc)
     {
+        if (observer) observer->enteredContext(desc);
         markEnterFirstSection();
         return true;
     }

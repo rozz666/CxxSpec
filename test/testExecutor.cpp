@@ -31,6 +31,7 @@
 #include <vector>
 #include <stdexcept>
 #include <gmock/gmock.h>
+#include "SpecificationObserverMock.hpp"
 
 using namespace testing;
 
@@ -42,7 +43,13 @@ struct SpecificationExecutorTest : testing::Test
     static std::map<std::string, SpecificationFunction> registeredSpec;
     static std::vector<int> steps;
 
+    std::shared_ptr<SpecificationObserverMock> observer;
     SpecificationExecutor executor;
+
+    SpecificationExecutorTest()
+        : observer(std::make_shared<NiceMock<SpecificationObserverMock>>())
+    {
+    }
 
     static void step(int n)
     {
@@ -312,6 +319,35 @@ TEST_F(SpecificationExecutorTest, shouldExecuteAllSectionsWhenExceptionIsThrownA
 
     ASSERT_ANY_THROW(havingExecuted("exception after sections"));
     ASSERT_TRUE(executor.done());
+}
+
+CXXSPEC_DESCRIBE("contexts")
+{
+    CXXSPEC_CONTEXT("a")
+    {
+        CXXSPEC_CONTEXT("b")
+        {
+        }
+    }
+
+    CXXSPEC_CONTEXT("c")
+    {
+    }
+}
+
+TEST_F(SpecificationExecutorTest, shouldNotifyAboutEnteringSections)
+{
+    executor.setObserver(observer);
+    InSequence seq;
+    EXPECT_CALL(*observer, enteredContext("a"));
+    EXPECT_CALL(*observer, enteredContext("b"));
+    havingExecuted("contexts");
+
+    EXPECT_CALL(*observer, enteredContext("c"));
+    havingExecuted("contexts");
+
+    // no contexts
+    havingExecuted("contexts");
 }
 
 }
