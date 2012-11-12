@@ -35,16 +35,30 @@ struct ConsoleSpecificationObserver : testing::Test
     std::ostringstream stream;
     CxxSpec::ConsoleSpecificationObserver observer;
     ConsoleSpecificationObserver() : observer(stream) { }
+
+    void expectOutput(const std::string& output)
+    {
+        EXPECT_EQ(output, stream.str());
+        stream.str("");
+    }
 };
 
 TEST_F(ConsoleSpecificationObserver, shouldReportFailedTestInfo)
 {
     observer.testFailed(CxxSpec::AssertionFailed("{file}", 99, "{expression}", "{expectation}"));
-    EXPECT_EQ("{expression} {expectation}\nAt {file}:99\n", stream.str());
+    expectOutput("{expression} {expectation}\nAt {file}:99\n");
 }
 
 TEST_F(ConsoleSpecificationObserver, shouldReportSpecificationName)
 {
     observer.testingSpecification("{spec}");
-    EXPECT_EQ("{spec}\n", stream.str());
+    expectOutput("{spec}\n");
+}
+
+TEST_F(ConsoleSpecificationObserver, shouldReportEnteredContextNameWithIndentationProportionalToDepth)
+{
+    observer.enteredContext("{context1}");
+    expectOutput("    {context1}\n");
+    observer.enteredContext("{context2}");
+    expectOutput("        {context2}\n");
 }

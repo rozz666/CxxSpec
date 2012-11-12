@@ -28,6 +28,7 @@
 #ifndef CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
 #define CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
 #include <ostream>
+#include <iomanip>
 #include <CxxSpec/ISpecificationObserver.hpp>
 
 namespace CxxSpec {
@@ -35,7 +36,7 @@ namespace CxxSpec {
 class ConsoleSpecificationObserver : public ISpecificationObserver
 {
 public:
-    ConsoleSpecificationObserver(std::ostream& os) : os(os) { }
+    ConsoleSpecificationObserver(std::ostream& os) : os(os), indent(1) { }
     virtual void testFailed(const CxxSpec::AssertionFailed& af)
     {
         os << af.expression() << " " << af.expectation() << std::endl;
@@ -45,10 +46,15 @@ public:
     {
         os << spec << std::endl;
     }
-    virtual void enteredContext(const std::string& ) { }
+    virtual void enteredContext(const std::string& context)
+    {
+        os << std::setw(indent * 4) << " " << context << std::endl;
+        ++indent;
+    }
     virtual void leftContext() { }
 private:
     std::ostream& os;
+    int indent;
 };
 
 }
