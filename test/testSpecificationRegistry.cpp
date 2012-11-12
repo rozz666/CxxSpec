@@ -45,13 +45,17 @@ struct SpecificationRegistryTest : testing::Test
     SpecificationRegistryTest()
         : visitor1(std::make_shared<NiceMock<SpecificationVisitorMock>>()),
         visitor2(std::make_shared<NiceMock<SpecificationVisitorMock>>()),
-        registry([&]{ return visitorFactory(); }),
         observer(std::make_shared<NiceMock<SpecificationObserverMock>>())
     {
         ON_CALL(*visitor1, beginSection(_)).WillByDefault(Return(false));
         ON_CALL(*visitor2, beginSection(_)).WillByDefault(Return(false));
         ON_CALL(*visitor1, done()).WillByDefault(Return(true));
         ON_CALL(*visitor2, done()).WillByDefault(Return(true));
+    }
+
+    void runAll()
+    {
+        registry.runAll([&]{ return visitorFactory(); }, observer);
     }
 
     static bool dummySpecification1Called;
@@ -98,7 +102,7 @@ TEST_F(SpecificationRegistryTest, shouldRunSpecificationsInOrderAndPassNewVisito
     dummySpecification1Visitor = nullptr;
     dummySpecification2Called = false;
 
-    registry.runAll(observer);
+    runAll();
 
     ASSERT_TRUE(dummySpecification1Called);
     ASSERT_TRUE(dummySpecification1Visitor == &*visitor1);
@@ -107,7 +111,7 @@ TEST_F(SpecificationRegistryTest, shouldRunSpecificationsInOrderAndPassNewVisito
 
 TEST_F(SpecificationRegistryTest, shouldDoNothingWhenEmpty)
 {
-    registry.runAll(observer);
+    runAll();
 }
 
 TEST_F(SpecificationRegistryTest, shouldCatchFailedAssertions)
@@ -123,7 +127,7 @@ TEST_F(SpecificationRegistryTest, shouldCatchFailedAssertions)
     EXPECT_CALL(*observer, testFailed(Property(&CxxSpec::AssertionFailed::line, 2)));
     EXPECT_CALL(*visitor2, caughtException());
 
-    registry.runAll(observer);
+    runAll();
 }
 
 TEST_F(SpecificationRegistryTest, shouldVisitSpecificationUntilDoneAndCatchAssertionsEachTime)
@@ -142,7 +146,7 @@ TEST_F(SpecificationRegistryTest, shouldVisitSpecificationUntilDoneAndCatchAsser
         EXPECT_CALL(*visitor1, done()).WillOnce(Return(true));
     }
 
-    registry.runAll(observer);
+    runAll();
 }
 
 TEST_F(SpecificationRegistryTest, shouldNotifyObserverAboutSpecificationName)
@@ -157,5 +161,5 @@ TEST_F(SpecificationRegistryTest, shouldNotifyObserverAboutSpecificationName)
 
     EXPECT_CALL(*observer, testingSpecification("spec1"));
 
-    registry.runAll(observer);
+    runAll();
 }
