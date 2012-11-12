@@ -51,7 +51,10 @@ public:
         os << std::setw(indent * 4) << " " << context << std::endl;
         ++indent;
     }
-    virtual void leftContext() { }
+    virtual void leftContext()
+    {
+        --indent;
+    }
 private:
     std::ostream& os;
     int indent;

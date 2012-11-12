@@ -36,6 +36,11 @@ struct ConsoleSpecificationObserverTest : testing::Test
     CxxSpec::ConsoleSpecificationObserver observer;
     ConsoleSpecificationObserverTest() : observer(stream) { }
 
+    void clearOutput()
+    {
+        stream.str("");
+    }
+
     void expectOutput(const std::string& output)
     {
         EXPECT_EQ(output, stream.str());
@@ -61,4 +66,18 @@ TEST_F(ConsoleSpecificationObserverTest, shouldReportEnteredContextNameWithInden
     expectOutput("    {context1}\n");
     observer.enteredContext("{context2}");
     expectOutput("        {context2}\n");
+}
+
+TEST_F(ConsoleSpecificationObserverTest, shouldDecreaseIndentationWhenLeavingContexts)
+{
+    observer.enteredContext("a");
+    observer.enteredContext("b");
+    observer.leftContext();
+    clearOutput();
+    observer.enteredContext("d");
+    expectOutput("        d\n");
+    observer.leftContext();
+    observer.leftContext();
+    observer.enteredContext("e");
+    expectOutput("    e\n");
 }
