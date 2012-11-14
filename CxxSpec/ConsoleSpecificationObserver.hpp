@@ -29,6 +29,7 @@
 #define CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
 #include <ostream>
 #include <iomanip>
+#include <unordered_map>
 #include <CxxSpec/ISpecificationObserver.hpp>
 
 namespace CxxSpec {
@@ -36,7 +37,7 @@ namespace CxxSpec {
 class ConsoleSpecificationObserver : public ISpecificationObserver
 {
 public:
-    ConsoleSpecificationObserver(std::ostream& os) : os(os), indent(1) { }
+    ConsoleSpecificationObserver(std::ostream& os) : os(os), indent(0) { }
     virtual void testFailed(const CxxSpec::AssertionFailed& af)
     {
         os << af.expression() << " " << af.expectation() << std::endl;
@@ -48,8 +49,11 @@ public:
     }
     virtual void enteredContext(const std::string& context)
     {
-        os << std::setw(indent * 4) << " " << context << std::endl;
         ++indent;
+        if (visited[indent] == context)
+            return;
+        visited[indent] = context;
+        os << std::setw(indent * 4) << " " << context << std::endl;
     }
     virtual void leftContext()
     {
@@ -58,6 +62,7 @@ public:
 private:
     std::ostream& os;
     int indent;
+    std::unordered_map<int, std::string> visited;
 };
 
 }

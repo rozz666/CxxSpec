@@ -81,3 +81,18 @@ TEST_F(ConsoleSpecificationObserverTest, shouldDecreaseIndentationWhenLeavingCon
     observer.enteredContext("e");
     expectOutput("    e\n");
 }
+
+TEST_F(ConsoleSpecificationObserverTest, shouldNotRepeatVisitedContexts)
+{
+    observer.enteredContext("a");
+    observer.enteredContext("b");
+    observer.enteredContext("c");
+    observer.leftContext();
+    observer.leftContext();
+    observer.leftContext();
+    clearOutput();
+    observer.enteredContext("a");
+    observer.enteredContext("b");
+    observer.enteredContext("d");
+    expectOutput("            d\n");
+}
