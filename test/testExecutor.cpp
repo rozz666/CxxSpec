@@ -353,4 +353,31 @@ TEST_F(SpecificationExecutorTest, shouldNotifyAboutEnteringAndLeavingSections)
     havingExecuted("contexts");
 }
 
+CXXSPEC_DESCRIBE("nested consecutive contexts")
+{
+    CXXSPEC_CONTEXT("a")
+    {
+        CXXSPEC_CONTEXT("b");
+        CXXSPEC_CONTEXT("c");
+    }
+}
+
+TEST_F(SpecificationExecutorTest, shouldNotifyAboutEnteringAndLeavingNestedConsecutiveSections)
+{
+    executor = std::make_shared<SpecificationExecutor>(observer);
+    InSequence seq;
+
+    EXPECT_CALL(*observer, enteredContext("a"));
+    EXPECT_CALL(*observer, enteredContext("b"));
+    EXPECT_CALL(*observer, leftContext()).Times(2);
+    havingExecuted("nested consecutive contexts");
+
+    EXPECT_CALL(*observer, enteredContext("a"));
+    EXPECT_CALL(*observer, enteredContext("c"));
+    EXPECT_CALL(*observer, leftContext()).Times(2);
+    havingExecuted("nested consecutive contexts");
+
+    havingExecuted("nested consecutive contexts");
+}
+
 }

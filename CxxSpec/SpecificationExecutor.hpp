@@ -174,11 +174,16 @@ private:
         nextPath.back()++;
     }
 
+    void enteredContext(const std::string& desc)
+    {
+        if (observer) observer->enteredContext(desc);
+    }
+
     bool following_beginSection(const std::string& desc)
     {
         markEnterFirstSection();
         if (!shouldEnterSection()) return false;
-        if (observer) observer->enteredContext(desc);
+        enteredContext(desc);
         return true;
     }
 
@@ -189,14 +194,21 @@ private:
 
     bool running_beginSection(const std::string& desc)
     {
-        if (observer) observer->enteredContext(desc);
+        enteredContext(desc);
         markEnterFirstSection();
         return true;
     }
 
+    void leftContexts()
+    {
+        if (observer)
+            for (auto n = nextPath.size(); n > 1; --n)
+                observer->leftContext();
+    }
+
     void running_endSection()
     {
-        if (observer) observer->leftContext();
+        leftContexts();
         state = State::expectingSection();
 
         markLeaveSectionAndEnterNext();
@@ -212,7 +224,6 @@ private:
 
     void expectSection_endSection()
     {
-        if (observer) observer->leftContext();
         markLeaveSectionAndEnterNext();
     }
 

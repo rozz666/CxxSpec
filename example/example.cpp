@@ -2,6 +2,7 @@
 
 #define describe CXXSPEC_DESCRIBE
 #define it CXXSPEC_CONTEXT
+#define context CXXSPEC_CONTEXT
 #define expect CXXSPEC_EXPECT
 
 describe("int")
@@ -29,11 +30,20 @@ describe("std::vector<int>")
         expect(v.size()).should == 2u;
     }
 
-    it("pop_back should decrease size")
+    context("with [ 3, 7 ]")
     {
-        v.push_back(6);
-        v.push_back(8);
-        v.pop_back();
-        expect(v.size()).should == 1u;
+        v = { 3, 7 };
+        it("should provide accessors")
+        {
+            expect(v[0]).should == 3;
+            expect(v[1]).should == 7;
+        }
+        it("should shrink when poping elements")
+        {
+            v.pop_back();
+            expect(v.size()).should == 1u;
+            v.pop_back();
+            expect(v.size()).should == 0u;
+        }
     }
 }
