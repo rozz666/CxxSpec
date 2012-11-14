@@ -96,3 +96,15 @@ TEST_F(ConsoleSpecificationObserverTest, shouldNotRepeatVisitedContexts)
     observer.enteredContext("d");
     expectOutput("            d\n");
 }
+
+TEST_F(ConsoleSpecificationObserverTest, shouldRepeatSameNamedContextsInDifferentContexts)
+{
+    observer.enteredContext("a");
+    observer.enteredContext("b");
+    observer.leftContext();
+    observer.leftContext();
+    observer.enteredContext("c");
+    clearOutput();
+    observer.enteredContext("b");
+    expectOutput("        b\n");
+}

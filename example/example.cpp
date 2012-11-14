@@ -17,17 +17,33 @@ describe("std::vector<int>")
 {
     std::vector<int> v;
 
-    it("should be empty when created")
+    context("when created")
     {
-        expect(v.empty()).should == true;
+        it("should be empty")
+        {
+            expect(v.empty()).should == true;
+        }
     }
 
-    it("should have size equal to the number of pushed elements")
+    context("when cleared")
     {
-        v.push_back(7);
-        expect(v.size()).should == 1u;
-        v.push_back(8);
-        expect(v.size()).should == 2u;
+        v.push_back(9);
+        v.clear();
+
+        it("should be empty")
+        {
+            expect(v.empty()).should == true;
+        }
+    }
+    context("when created")
+    {
+        it("should have size equal to the number of pushed elements")
+        {
+            v.push_back(7);
+            expect(v.size()).should == 1u;
+            v.push_back(8);
+            expect(v.size()).should == 2u;
+        }
     }
 
     context("with [ 3, 7 ]")

@@ -29,7 +29,7 @@
 #define CXXSPEC_CONSOLESPECIFICATIONOBSERVER_HPP
 #include <ostream>
 #include <iomanip>
-#include <unordered_map>
+#include <map>
 #include <CxxSpec/ISpecificationObserver.hpp>
 
 namespace CxxSpec {
@@ -50,9 +50,9 @@ public:
     virtual void enteredContext(const std::string& context)
     {
         ++indent;
-        if (visited[indent] == context)
+        if (history.isFollowingVisitation(indent, context))
             return;
-        visited[indent] = context;
+        history.newVisitation(indent, context);
         os << std::setw(indent * 4) << " " << context << std::endl;
     }
     virtual void leftContext()
@@ -60,9 +60,27 @@ public:
         --indent;
     }
 private:
+
+    class VisitiationHistory
+    {
+    public:
+        bool isFollowingVisitation(int indent, const std::string& context) const
+        {
+            auto it = visited.find(indent);
+            return it != visited.end() && it->second == context;
+        }
+        void newVisitation(int indent, const std::string& context)
+        {
+            visited.erase(visited.find(indent), visited.end());
+            visited[indent] = context;
+        }
+    private:
+        std::map<int, std::string> visited;
+    };
+
     std::ostream& os;
     int indent;
-    std::unordered_map<int, std::string> visited;
+    VisitiationHistory history;
 };
 
 }
