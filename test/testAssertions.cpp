@@ -91,6 +91,18 @@ TEST_F(AssertionTest, beTrueShouldThrowWhenExpressionIsFalse)
         "expected to be true but is false");
 }
 
+TEST_F(AssertionTest, beFalseShouldNotThrowWhenExpressionIfFalse)
+{
+    ASSERT_NO_THROW(CXXSPEC_EXPECT(false).should.beFalse());
+}
+
+TEST_F(AssertionTest, beFalseShouldThrowWhenExpressionIsTrue)
+{
+    expectAssertionFailedWithExpectation(
+        []{ CXXSPEC_EXPECT(3 == 3).should.beFalse(); },
+        "expected to be false but is true");
+}
+
 TEST_F(AssertionTest, operatorEqShouldNotThrowWhenExpressionsAreEqual)
 {
     CXXSPEC_EXPECT(OperatorEqOnly(7)).should == OperatorEqOnly(7);

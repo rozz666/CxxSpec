@@ -44,6 +44,12 @@ public:
             throwAssertionFailed("expected to be true but is false");
     }
 
+    void beFalse()
+    {
+        if (expr)
+            throwAssertionFailed("expected to be false but is true");
+    }
+
     void operator==(Expression expected)
     {
         if (!(expr == expected))
