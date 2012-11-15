@@ -28,11 +28,12 @@
 #include <CxxSpec/Assert.hpp>
 #include <sstream>
 #include <gtest/gtest.h>
+#include "AssertionTestingClasses.hpp"
 
 struct AssertionTest : testing::Test
 {
     template <typename F>
-    void expectAssertionFailed(F call, const std::string& expectation)
+    void expectAssertionFailedWithExpectation(F call, const std::string& expectation)
     {
         try
         {
@@ -46,24 +47,7 @@ struct AssertionTest : testing::Test
     }
 };
 
-namespace
-{
-
-class Printable {
-    Printable(const Printable& );
-    Printable& operator=(const Printable& );
-public:
-    Printable() { }
-};
-
-std::ostream& operator<<(std::ostream& os, const Printable& )
-{
-    return os << "Printable";
-}
-
-}
-
-TEST_F(AssertionTest, toStringShouldNotCopyExpressionAndUseLeftShiftOperatorToConvertItToString)
+TEST_F(AssertionTest, toStringShouldUseLeftShiftOperatorToConvertItToStringAndNotCopyTheExpression)
 {
     ASSERT_EQ("Printable", CxxSpec::toString(Printable()));
 }
@@ -90,43 +74,21 @@ TEST_F(AssertionTest, CXXSPEC_EXPECT_shouldPassExpressionLineFileAndExpressionTe
     }
 }
 
-TEST_F(AssertionTest, beTrueShouldNotThrowWhenExpressionIsTrue)
-{
-    ASSERT_NO_THROW(
-    {
-        CXXSPEC_EXPECT(true).should.beTrue();
-    });
-}
-
-TEST_F(AssertionTest, beTrueShouldThrowWhenExpressionIsFalse)
-{
-    expectAssertionFailed(
-        []{ CXXSPEC_EXPECT(3 == 5).should.beTrue(); },
-        "expected to be true but is false");
-}
-
 TEST_F(AssertionTest, shouldShouldBeOfDifferentTypeThanExpectation)
 {
     ASSERT_TRUE(typeid(CXXSPEC_EXPECT(0)) != typeid(CXXSPEC_EXPECT(0).should));
 }
 
-namespace
+TEST_F(AssertionTest, beTrueShouldNotThrowWhenExpressionIsTrue)
 {
+    ASSERT_NO_THROW(CXXSPEC_EXPECT(true).should.beTrue());
+}
 
-class OperatorEqOnly
+TEST_F(AssertionTest, beTrueShouldThrowWhenExpressionIsFalse)
 {
-public:
-    explicit OperatorEqOnly(int value) : value(value) { }
-
-    friend bool operator==(const OperatorEqOnly& left, const OperatorEqOnly& right)
-    {
-        return left.value == right.value;
-    }
-private:
-    int value;
-};
-
-
+    expectAssertionFailedWithExpectation(
+        []{ CXXSPEC_EXPECT(3 == 5).should.beTrue(); },
+        "expected to be true but is false");
 }
 
 TEST_F(AssertionTest, operatorEqShouldNotThrowWhenExpressionsAreEqual)
@@ -136,14 +98,14 @@ TEST_F(AssertionTest, operatorEqShouldNotThrowWhenExpressionsAreEqual)
 
 TEST_F(AssertionTest, operatorEqShouldThrowWhenExpressionsAreNotEqual)
 {
-    expectAssertionFailed(
+    expectAssertionFailedWithExpectation(
         []{ CXXSPEC_EXPECT(OperatorEqOnly(7)).should == OperatorEqOnly(8); },
         "failed equality check");
 }
 
 TEST_F(AssertionTest, operatorEqShouldPrintValuesWhenExpressionsArePrintable)
 {
-    expectAssertionFailed(
+    expectAssertionFailedWithExpectation(
         []{ CXXSPEC_EXPECT(4).should == 8; },
         "expected to equal 8 but equals 4");
 }
