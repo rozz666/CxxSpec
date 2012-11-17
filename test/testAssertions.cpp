@@ -160,5 +160,5 @@ TEST_F(AssertionTest, throwExceptionShouldThrowWhenExpressionThrowsADifferentExc
 {
     expectAssertionFailedWithExpectation(
         []{ CXXSPEC_EXPECT(throwRuntimeError()).should.throwException<std::logic_error>(); },
-        "thrown an unexpected exception");
+        "has thrown an unexpected exception");
 }

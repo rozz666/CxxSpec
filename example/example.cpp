@@ -1,4 +1,5 @@
 #include <CxxSpec/CxxSpec.hpp>
+#include <stdexcept>
 
 #define describe CXXSPEC_DESCRIBE
 #define it CXXSPEC_CONTEXT
@@ -60,6 +61,10 @@ describe("std::vector<int>")
             expect(v.size()).should == 1u;
             v.pop_back();
             expect(v.size()).should == 0u;
+        }
+        it("should throw when accessing element out of range")
+        {
+            expect(v.at(2)).should.throwException<std::out_of_range>();
         }
     }
 }

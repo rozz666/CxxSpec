@@ -57,7 +57,7 @@ public:
         }
         catch (...)
         {
-            throwAssertionFailed("thrown an unexpected exception");
+            throwAssertionFailed("has thrown an unexpected exception");
         }
     }
 
