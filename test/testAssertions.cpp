@@ -27,6 +27,7 @@
 
 #include <CxxSpec/Assert.hpp>
 #include <sstream>
+#include <stdexcept>
 #include <gtest/gtest.h>
 #include "AssertionTestingClasses.hpp"
 
@@ -120,4 +121,44 @@ TEST_F(AssertionTest, operatorEqShouldPrintValuesWhenExpressionsArePrintable)
     expectAssertionFailedWithExpectation(
         []{ CXXSPEC_EXPECT(4).should == 8; },
         "expected to equal 8 but equals 4");
+}
+
+namespace
+{
+int throwLogicError()
+{
+    throw std::logic_error("");
+}
+int throwRuntimeError()
+{
+    throw std::runtime_error("");
+}
+
+void noThrow() { }
+
+}
+
+TEST_F(AssertionTest, throwExceptionShouldNotThrowWhenExpressionThrowsExpectedException)
+{
+    ASSERT_NO_THROW(
+        CXXSPEC_EXPECT(throw std::out_of_range("")).should.throwException<std::logic_error>());
+    ASSERT_NO_THROW(
+        CXXSPEC_EXPECT(throwLogicError()).should.throwException<std::logic_error>());
+}
+
+TEST_F(AssertionTest, throwExceptionShouldThrowWhenExpressionDoesntThrowExpectedException)
+{
+    expectAssertionFailedWithExpectation(
+        []{ CXXSPEC_EXPECT(noThrow()).should.throwException<std::logic_error>(); },
+        "expected to throw an exception");
+    expectAssertionFailedWithExpectation(
+        []{ CXXSPEC_EXPECT(7).should.throwException<std::logic_error>(); },
+        "expected to throw an exception");
+}
+
+TEST_F(AssertionTest, throwExceptionShouldThrowWhenExpressionThrowsADifferentException)
+{
+    expectAssertionFailedWithExpectation(
+        []{ CXXSPEC_EXPECT(throwRuntimeError()).should.throwException<std::logic_error>(); },
+        "thrown an unexpected exception");
 }

@@ -27,7 +27,6 @@
 
 #ifndef CXXSPEC_ASSERT_HPP
 #define CXXSPEC_ASSERT_HPP
-#include <CxxSpec/Messages.hpp>
 #include <CxxSpec/Should.hpp>
 #include <sstream>
 
@@ -50,7 +49,7 @@ inline Expectation<Expression> makeExpectation(Expression expr, std::string file
     return Expectation<Expression>(expr, file, line, exprText);
 }
 
-#define CXXSPEC_EXPECT(expr) CxxSpec::makeExpectation(expr, __FILE__, __LINE__, #expr)
+#define CXXSPEC_EXPECT(expr) CxxSpec::makeExpectation([&]{ return expr; }, __FILE__, __LINE__, #expr)
 
 }
 

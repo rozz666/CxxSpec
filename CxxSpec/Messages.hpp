@@ -57,6 +57,11 @@ struct IsPrintable {
         sizeof(*static_cast<std::ostream *>(nullptr) << *static_cast<const T *>(nullptr)) != sizeof(UniqType);
 };
 
+template <>
+struct IsPrintable<void> {
+    static const bool value = false;
+};
+
 };
 
 template <typename Expression, bool ExpressionPrintable = Detail::IsPrintable<Expression>::value>

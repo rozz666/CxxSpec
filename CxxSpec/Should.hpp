@@ -28,46 +28,90 @@
 #ifndef CXXSPEC_SHOULD_HPP
 #define CXXSPEC_SHOULD_HPP
 #include <CxxSpec/AssertionFailed.hpp>
+#include <CxxSpec/Messages.hpp>
+#include <type_traits>
 
 namespace CxxSpec {
 
-template <typename Expression>
-class Should
+template <typename Expression, typename ExpressionType>
+class ShouldBase
 {
 public:
-    Should(Expression expr, std::string file, int line, std::string exprText)
+    ShouldBase(Expression expr, std::string file, int line, std::string exprText)
         : expr(expr), file(file), line(line), exprText(exprText) { }
 
-    void beTrue()
+    template <typename E>
+    void throwException()
     {
-        if (!expr)
-            throwAssertionFailed("expected to be true but is false");
+        try
+        {
+            expr();
+            throwAssertionFailed("expected to throw an exception");
+        }
+        catch (const AssertionFailed& )
+        {
+            throw;
+        }
+        catch (const E&)
+        {
+        }
+        catch (...)
+        {
+            throwAssertionFailed("thrown an unexpected exception");
+        }
     }
 
-    void beFalse()
-    {
-        if (expr)
-            throwAssertionFailed("expected to be false but is true");
-    }
-
-    void operator==(Expression expected)
-    {
-        if (!(expr == expected))
-            throwAssertionFailed(Messages::equalityFailed(expr, expected));
-    }
-
-private:
+protected:
     Expression expr;
     std::string file;
     int line;
     std::string exprText;
 
-    typedef CxxSpec::Messages<Expression> Messages;
+    typedef CxxSpec::Messages<ExpressionType> Messages;
 
     void throwAssertionFailed(const std::string& expectation)
     {
         throw AssertionFailed(file, line, exprText, expectation);
     }
+};
+
+template <typename Expression, typename ExpressionType = typename std::result_of<Expression()>::type>
+class Should : public ShouldBase<Expression, ExpressionType>
+{
+    typedef ShouldBase<Expression, ExpressionType> Base;
+public:
+
+    Should(Expression expr, std::string file, int line, std::string exprText)
+        : Base(expr, file, line, exprText) { }
+
+    void beTrue()
+    {
+        if (!Base::expr())
+            Base::throwAssertionFailed("expected to be true but is false");
+    }
+
+    void beFalse()
+    {
+        if (Base::expr())
+            Base::throwAssertionFailed("expected to be false but is true");
+    }
+
+    void operator==(ExpressionType expected)
+    {
+        auto val = Base::expr();
+        if (!(val == expected))
+            Base::throwAssertionFailed(Base::Messages::equalityFailed(val, expected));
+    }
+
+};
+
+template <typename Expression>
+class Should<Expression, void> : public ShouldBase<Expression, void>
+{
+    typedef ShouldBase<Expression, void> Base;
+public:
+    Should(Expression expr, std::string file, int line, std::string exprText)
+        : Base(expr, file, line, exprText) { }
 };
 
 }
